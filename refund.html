@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<meta name="description" content="This is a login page template based on Bootstrap 5">
+	<title>Login E POS</title>
+    <link rel="stylesheet" href="./assets/bootstrap-5.3.3-dist/css/bootstrap.min.css">
+    <script src="./assets/jquery.min.js"></script>
+	<script src="./assets/angular/angular.min.js"></script>
+    <script src="./assets/app.angular.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+	<script src="./assets/jquery-validation-1.19.1/dist/jquery.validate.min.js"></script>
+	<script src="./assets/jquery-validation-1.19.1/dist/additional-methods.min.js"></script>
+</head>
+<body ng-app="app"  ng-controller="myCtrl">
+	<section class="h-100 p-2">
+		<div class="row">
+			<div class="col-sm-12">
+				<h2>Refund (Retur Penjualan)</h2>
+			</div>
+		</div>
+		<div class="row mt-2 mb-2">
+			<div class="col-sm-6">
+				<div class="mb-1 row">
+					<label for="text" class="col-sm-3 col-form-label">No Penjualan</label>
+					<div class="col-sm-9">
+						<input type="text" class="form-control form-control-sm" id="no_penjualan" my-enter="get_penjualan_detail()" ng-model="no_penjualan">
+					</div>
+				</div>
+				<div class="mb-1 row">
+					<label for="text" class="col-sm-3 col-form-label">Keterangan</label>
+					<div class="col-sm-9">
+						<textarea class="form-control form-control-sm" id="keterangan" ng-model="keterangan"></textarea>
+					</div>
+				</div>
+			</div>
+			<div class="col-sm-6">
+				<div class="mb-1 row">
+					<label for="text" class="col-sm-3 col-form-label">Kode Member</label>
+					<div class="col-sm-9">
+						<input type="text" class="form-control form-control-sm" disabled="true" ng-model="penjualan.kode_member">
+					</div>
+				</div>
+				<div class="mb-1 row">
+					<label for="text" class="col-sm-3 col-form-label">Nama Member</label>
+					<div class="col-sm-9">
+						<input type="text" class="form-control form-control-sm" disabled="true" ng-model="penjualan.nama_member">
+					</div>
+				</div>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-6">
+				<table class="table table-sm table-bordered border-danger">
+					<thead>
+					  <tr>
+						<th scope="col">#</th>
+						<th scope="col">Nama Barang</th>
+						<th scope="col">QTY</th>
+						<th scope="col">Satuan</th>
+						<th scope="col">Harga</th>
+						<th scope="col">D</th>
+						<th scope="col">Total</th>
+						<th scope="col">refund</th>
+					  </tr>
+					</thead>
+					<tbody>
+					  <tr ng-repeat="item in penjualan.detail">
+						<th scope="row"><% $index + 1 %></th>
+						<td><% item.nama_barang %></td>
+						<td><% item.qty_jual %></td>
+						<td><% item.kode_satuan %></td>
+						<td><% item.harga_jual  | currency:""%></td>
+						<td><% item.diskon1 %></td>
+						<td><% item.sub_total  | currency:"" %></td>
+						<td><span class="badge rounded-pill bg-primary point" ng-click="tambah(item)">Refund</span></td>
+					  </tr>
+					</tbody>
+				  </table>
+			</div>
+			<div class="col-sm-6">
+				<table class="table table-sm table-bordered border-primary">
+					<thead>
+						<tr>
+						  <th scope="col">#</th>
+						  <th scope="col">Nama Barang</th>
+						  <th scope="col">QTY</th>
+						  <th scope="col">Satuan</th>
+						  <th scope="col">Harga</th>
+						  <th scope="col">D</th>
+						  <th scope="col">Total</th>
+						  <th scope="col">hapus</th>
+						</tr>
+					  </thead>
+					  <tbody>
+						<tr ng-repeat="item in detail">
+							<th scope="row"><% $index + 1 %></th>
+							<td><% item.nama_barang %></td>
+							<td><input type="text" ng-model="item.qty_refund" ng-change="changeQty(item,$index)" style="width:50px"></td>
+							<td><% item.kode_satuan %></td>
+							<td><% item.harga_jual  | currency:""%></td>
+							<td><% item.diskon1 %></td>
+							<td><% item.sub_total  | currency:"" %></td>
+							<td><span class="badge rounded-pill bg-danger point" ng-click="hapus($index)">Hapus</span></td>
+						  </tr>
+					  </tbody>
+				</table>
+				<div class="d-flex justify-content-end">
+					<button ng-click="simpan_refund()" type="button" class="btn btn-primary">Simpan Retur penjualan</button>
+				</div>
+			</div>
+		</div>
+	</section>
+	<script src="./refund.js"></script>
+<script>
+
+</script>
+</body>
+</html>

@@ -1,0 +1,137 @@
+<html>
+    <head>
+        <script src="./assets/jquery.min.js"></script>
+        <script src="./assets/angular/angular.min.js"></script>
+        <script src="./assets/app.angular.js"></script>
+        <script>
+            $( document ).ready( async()=>{
+                // $('#cetak').click();
+            });
+            app.controller("myCtrl", function($scope,$http,API) {
+                angular.element(window).ready(async function () {
+                    $scope.data = null;
+                    $scope.id =null;
+                    $scope.print=null;
+                    $scope.scale=3;
+                    $scope.text = {
+                        header : 14,
+                        title : 10,
+                        text :9,
+                        footer : 7
+                    };
+                    function getParameterByName(name, url = window.location.href) {
+                        name = name.replace(/[\[\]]/g, '\\$&');
+                        let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+                        let results = regex.exec(url);
+                        if (!results) return null;
+                        if (!results[2]) return '';
+                        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+                    }
+                    $scope.id = getParameterByName('id');
+                    
+                    let response = await window.api.getRefundDetail($scope.id);
+                    console.log('response',response);
+                    if(response.success){
+                        $scope.data = response.data;
+                        $scope.$apply();
+                        $('#cetak').click();
+                    }else{
+                        Swal.fire({type: 'error',title: 'Oops...',text: response.message,})
+                    }
+                    // console.log($scope.data);
+                    window.addEventListener("afterprint",()=>{
+                        window.history.back();
+                    });
+                })
+
+                $scope.cetak = function(){
+                    await = window.api.tesPrint({
+                        id:1243
+                    });
+                }
+                // $scope.print();
+            });
+        </script>
+        <link href="./assets/fonts/inter/inter.css">
+        <style>
+            p {
+                line-height: 0.1;
+            }
+            @media print {
+                body {
+                    width: 54mm; /* Or 80mm, depending on the paper size */
+                }
+            }
+        </style>
+    </head>
+    <body ng-app="app"  ng-controller="myCtrl">
+        <button type="button" ng-click="cetak()" id="cetak" style="display: none;">print</button>
+        <div style="font-family: 'Inter', sans-serif;">
+            <div style="text-align: center;"> 
+                <a style="font-size: <% text.header + scale %>px;font-weight: bold;"><% data.toko.nama_lokasi %></a><br/>
+                <a style="font-size: <% text.title + scale %>px;font-weight: bold;"><% data.toko.alamat %></a>
+                <hr/>
+                <table style="border:0px">
+                    <tr style="border:0px">
+                        <td style="border:0px;font-size: <% text.text + scale %>px">NAMA</td>
+                        <td style="border:0px;font-size: <% text.text + scale %>px">:</td>
+                        <td style="border:0px;font-size: <% text.text + scale %>px"><% data.toko.nama_lokasi %></td>
+                    </tr>
+                    <tr style="border:0px">
+                        <td style="border:0px;font-size: <% text.text + scale %>px">ALAMAT</td>
+                        <td style="border:0px;font-size: <% text.text + scale %>px">:</td>
+                        <td style="border:0px;font-size: <% text.text + scale %>px"><% data.toko.alamat %></td>
+                    </tr>
+                    <tr style="border:0px">
+                        <td style="border:0px;font-size: <% text.text + scale %>px">NPWP</td>
+                        <td style="border:0px;font-size: <% text.text + scale %>px">:</td>
+                        <td style="border:0px;font-size: <% text.text + scale %>px"><% data.toko.npwp %></td>
+                    </tr>
+                </table>
+                <hr/>
+            </div>
+            <a style="font-size: <% text.title + scale %>px;font-weight: bold;">Item Refund : </a>
+            <div ng-repeat="detail in data.transaksi.detail" style="border:0px;font-size: <% text.text + scale %>px;margin-bottom: 5px;">
+                <div class="nama_barang"><% detail.nama_barang.substring(0,26) %></div>
+                <!-- <table style="border: 0px;width: 100%;font-size: <% text.text + scale %>px;">
+                    <tr>
+                        <td>
+                            <% detail.kodeBarang.substring(0,26) %> <% detail.QtyJual %>x <% detail.HargaJual | currency:"" %>
+                        </td>
+                        <td style="text-align: right;">
+                            <% detail.SubTotal | currency:"" %>
+                        </td>
+                    </tr>
+                </table> -->
+                <div>
+                    <div style="display: inline-block;text-align: left;width: 68%;">
+                        <% detail.kode_barang.substring(0,26) %> <% detail.qty_jual %>x <% detail.harga_jual | currency:"" %>
+                    </div>
+                    <div style="display: inline-block;text-align: right;width: 30%">
+                        <% detail.sub_total | currency:"" %>
+                    </div>
+                </div>
+            </div>
+            <hr/>
+            <div style="font-family: 'Inter', sans-serif;font-size: <% text.text + scale %>px;">
+                <div>
+                    <div style="display: inline-block;text-align: left;width: 68%;font-weight: bold;">
+                        Total Refund
+                    </div>
+                    <div style="display: inline-block;text-align: right;width: 30%;font-weight: bold;">
+                        (<% data.transaksi.total_refund | currency:"" %>)
+                    </div>
+                </div>
+            </div>
+            <div style="font-family: 'Inter', sans-serif;font-size: <% text.footer + scale %>px;text-align: center;">
+                <p>*** PPN 11% SUDAH DI BAYAR MORODADI ***</p>
+                <p>DARI BLORA OLEH BLORA UNTUK BLORA</p><br/>
+                <p><% data.transaksi.created_at %>/<% data.login.nama%></p>
+                <p><% data.transaksi.no_retur_penjualan %></p>
+                <p>BARANG-BARANG YANG SUDAH DI BELI</p>
+                <p>TIDAK BOLEH DI TUKAR / DI KEMBALIKAN</p>
+                <p style="font-weight: bold;">** TERIMA KASIH **</p>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,41 @@
+{
+  "name": "epos-js",
+  "version": "1.0.0",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "build": "electron-builder",
+    "build:linux": "electron-builder --linux"
+  },
+  "build": {
+    "appId": "com.trijunapratama.epos",
+    "compression": "maximum",
+    "productName": "EPOS",
+    "win": {
+      "target": "nsis"
+    },
+    "linux": {
+      "target": ["AppImage", "deb"],
+      "category": "Utility",
+      "maintainer": "Triastartya <triastartya@gmail.com>"
+    }
+  },
+  "author": {
+    "name": "Triastartya",
+    "email": "triastartya@gmail.com",
+    "url": "https://retail.trijuna.online"
+  },
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "electron": "^32.1.0",
+    "electron-builder": "^25.0.5",
+    "electron-rebuild": "^3.2.9"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "better-sqlite3": "^11.3.0",
+    "getmac": "^6.6.0"
+  }
+}

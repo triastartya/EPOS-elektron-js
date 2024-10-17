@@ -1,0 +1,5 @@
+docker build -t electron-glibc227 .
+docker run -it -v ${PWD}:/app electron-glibc227 /bin/bash
+cd /app
+npm install
+electron-builder --linux

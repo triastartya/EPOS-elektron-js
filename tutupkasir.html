@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width,initial-scale=1">
+	<meta name="description" content="This is a login page template based on Bootstrap 5">
+	<title>Tutup Kasir</title>
+	<link rel="stylesheet" href="./assets/bootstrap-5.3.3-dist/css/bootstrap.min.css">
+    <script src="./assets/jquery.min.js"></script>
+	<script src="./assets/angular/angular.min.js"></script>
+    <script src="./assets/app.angular.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+	<script src="./assets/jquery-validation-1.19.1/dist/jquery.validate.min.js"></script>
+	<script src="./assets/jquery-validation-1.19.1/dist/additional-methods.min.js"></script>
+	<link href="https://cdn.datatables.net/v/bs5/dt-2.1.6/kt-2.12.1/sc-2.4.3/sl-2.1.0/datatables.min.css" rel="stylesheet">  
+    <script src="https://cdn.datatables.net/v/bs5/dt-2.1.6/kt-2.12.1/sc-2.4.3/sl-2.1.0/datatables.min.js"></script>
+<body ng-app="app"  ng-controller="myCtrl">
+	<section class="h-100">
+		<div class="container h-100">
+			<div class="row">
+				<div class="col-sm-12">
+					<h2>Tutup Kasir</h2>
+				</div>
+			</div>
+			<div ng-show="total_modal==0" class="alert alert-danger" role="alert">
+				<h4>Anda Tidak Bisa Melakukan Tutup Kasir, User <% input_tutup_kasir.data.login.nama %> Belum Melakukan Input Modal Kasir!</h4>
+			</div>
+			<div ng-show="total_modal!=0" class="row">
+				<div class="col-sm-6">
+					<p class="h5">Nama Kasir: <% input_tutup_kasir.data.login.nama %></p>
+					<table id="listdatatable" class="table table-bordered">
+					</table>
+					<!-- <div class="text-right"> -->
+						<p style="text-align: end;font-weight: bold;">Total Modal Kasir, <% total_modal | currency:"" %></p>
+					<!-- </div> -->
+				</div>
+				<div class="col-sm-6">
+					<p class="h5">Nominal Tutup Kasir</p>
+					<table class="table table-bordered">
+						<thead style="font-weight: bold;">
+							<tr>
+								<td>#</td>
+								<td>JENIS PEMBAYARAN</td>
+								<td>JUMLAH PENDAPATAN</td>
+							</tr>
+						</thead>
+						<tbody>
+							<tr ng-repeat="payment in payment_method">
+								<td><% payment.id_payment_method %></td>
+								<td><em><% payment.payment_method %></em></td>
+								<td>
+									<div class="input-group input-group-sm">
+										<span class="input-group-text" id="basic-addon1">Rp</span>
+										<input type="text" input-currency style="text-align:end" onfocus="this.select();" my-enter="nextfocus_right($index)" id="id_<% $index+1 %>"  class="form-control form-control-sm text-right" ng-change="changependapatan()" ng-model="payment.nominal" >
+									</div>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+					<table width="100%" class="table-header" cellpadding='5' style="padding : 2px;">
+                        <tr style="padding-bottom : 20px">
+                            <td class="label-table" width="45%" style="text-align:end">
+                                <b>Total Saldo Kasir</b>
+                            </td>
+                            <td class="label-table" width="5%">
+                                &nbsp;
+                            </td>
+                            <td class="label-table" width="50%" >
+								<div class="input-group input-group-sm">
+									<span class="input-group-text" id="basic-addon1">Rp</span>
+									<input type="text" class="form-control text-right" input-currency style="text-align:end" ng-model="sisa_saldo" disabled>
+								</div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td class="label-table" valign="top" style="text-align:end"><b>Keterangan</b></td>
+                            <td class="label-table" valign="top"></td>
+                            <td>
+                                <textarea class="form-control" ng-model="keterangan" id="keterangan" rows="3"></textarea>
+                            </td>
+                        </tr>
+						<tr></tr>
+                            <td colspan="2" class="label-table" valign="top"></td>
+                            <td style="text-align: end;">
+                                <button type="button" ng-click="simpan()" class="btn btn-primary btn-flat">Simpan Tutup Kasir</button>
+                            </td>
+                        </tr>
+                    </table>
+				</div>
+			</div>
+		</div>
+	</section>
+	<script src="./tutupkasir.js"></script>
+</body>
+</html>

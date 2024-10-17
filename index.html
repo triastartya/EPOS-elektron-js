@@ -1,0 +1,1177 @@
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>E POS</title>
+    <link rel="stylesheet" href="./assets/bootstrap-5.3.3-dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="./assets/bootstrap-icons-1.11.3/font/bootstrap-icons.min.css">
+    <script src="./assets/jquery.min.js"></script>
+    <script src="./assets/angular/angular.min.js"></script>
+    <script src="./assets/app.angular.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@8"></script>
+    <style>
+        label.error{
+            color: #dc3545;
+            font-style: italic;
+        }
+        input.error{
+            border-color: #dc3545;
+        }
+        input.error:focus {
+            border-color: #dc3545;
+        }
+        .btn-nav{
+            padding: 3px 6px;
+            border-radius: 8px;
+        }
+        .scroll_modal{
+            overflow-y: scroll;
+            overflow-x: hidden;
+        }
+        .form-group {
+            margin-bottom: 5px;
+        }
+        .caricustomer{
+            margin-bottom:10px;
+            text-align: center;
+            font-weight: 700;
+            font-size: 18px;
+        }
+        .manually-show-modal {
+            display:block !important;
+        }
+    </style>
+    <style>
+        .table-bordered>thead>tr>th, .table-bordered>tbody>tr>th, .table-bordered>tfoot>tr>th, .table-bordered>thead>tr>td, .table-bordered>tbody>tr>td, .table-bordered>tfoot>tr>td{
+            border: 1px solid #ddd;
+        }
+        .table-css th{
+            background-color: #2a71af!important;
+            color: #fff;
+            border-color: #357ebd!important;
+            border-top: 1px solid #357ebd!important;
+            text-align: center;
+        }
+        .btn-success{
+            background-color: #5cb85c!important;
+            border-color: #4cae4c!important;
+        }
+        .btn-info{
+            background-color: #5bc0de!important;
+            border-color: #46b8da!important;
+        }
+        .btn-warning{
+            background-color: #f0ad4e!important;
+            border-color: #eea236!important;
+        }
+        .btn-danger{
+            background-color: #d9534f!important;
+            border-color: #d43f3a!important;
+        }
+        .manually-show-modal {
+            display:block !important;
+        }
+    
+        .vertical-alignment-helper {
+            display:table;
+            height: 100%;
+            width: 100%;
+            pointer-events:none; /* This makes sure that we can still click outside of the modal to close it */
+        }
+        .vertical-align-center {
+            /* To center vertically */
+            display: table-cell;
+            vertical-align: middle;
+            pointer-events:none;
+        }
+        .modal-content {
+            /* Bootstrap sets the size of the modal in the modal-dialog class, we need to inherit it */
+            width:inherit;
+         max-width:inherit; /* For Bootstrap 4 - to avoid the modal window stretching full width */
+            height:inherit;
+            /* To center horizontally */
+            margin: 0 auto;
+            pointer-events:all;
+        }
+        .preloader{
+            position:fixed;
+            left:0;
+            top:0;
+            right:0;
+            bottom:0;
+            width:100%;
+            height:100%;
+            z-index:99999;
+            background-color:#fff;
+            display:flex
+        }
+        .spinner{
+            margin:auto;
+        }
+    </style>
+  </head>
+  <body ng-app="app"  ng-controller="myCtrl" >
+    <div class="preloader">
+        <div class="spinner text-center">
+            <div class="spinner-border text-primary mb-3" role="status">
+                <span class="sr-only"> </span>
+            </div>
+            <h4 class="text-primary">Loading...</h4>
+        </div>
+    </div>
+    <div style="padding: 10px;">
+    <!-- <section class="content"> -->
+        <button type="button" id="btnqty" ng-click="editqty()" style="display: none">Update</button>
+        <button type="button" id="btndel" ng-click="sodel()" style="display: none">Delete</button>
+        <button type="button" id="btnbarcode" ng-click="barcode()" style="display: none">Barcode</button>
+        <button type="button" id="btnstsqty" ng-click="setstsqty()" style="display: none">Qty</button>
+        <button type="button" id="btnbarang" ng-click="caribarang()" style="display: none">LocupBarang</button>
+        <button type="button" id="holdoropen" ng-click="holdoropen()" style="display: none">hold</button>
+        <button type="button" id="focustable" ng-click="reloadTable(true,1)"style="display: none">Focus Table</button>
+        <button type="button" id="btnharga" ng-click="editharga()"style="display: none">Focus Table</button>
+        <button type="button" id="print_ulang" ng-click="print_ulang()"style="display: none">Focus Table</button>
+        
+        <div class="row">
+            <div class="col-md-12">
+                <div class="alert alert-danger" role="alert" ng-hide="!notifbarang">
+                    Harga Barang Berubah Silahkan Ketik ( CTRL + B ) Untuk mengupdate harga barang!
+                </div>
+            </div>
+            <div class="col-md-8">
+                <div class="row">
+                    <div class="col-md-9">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <input type="text" id="getproduct" class="form-control" onFocus="whichFocus='barang'"  placeholder="Cari Product (F1)">
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="input-group">
+                                <input type="text" class="form-control" ng-model="namacustomer" id="namacustomer" placeholder="Cari Customer" disabled>
+                                <span class="input-group-btn">
+                                    <button type="button" class="btn btn-info btn-flat" id="btn_customer">Cari (F10)</button>
+                                </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <a style="color:blue;font-weight: bold;font-size:25px;font-weight:bold"><% displaybarang %></a>
+                            </div>
+                            <div class="col-md-4">
+                                <a style="color:green;font-weight: bold;font-size:15px;font-weight:bold"><% lastno %></a>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <h4 style="color:blue;font-weight: bold;" ng-hide="stsbarcode==false">Barcode Active</h4>
+                        <h4 style="color:red;font-weight: bold;" ng-hide="stsbarcode==true">Barcode Tidak Active</h4>
+                        <h4 style="color:green;font-weight: bold;" ng-hide="stsqty==false">Edit Qty Active</h4>
+                    </div>
+                </div>
+                <div class="row">
+                    <table id="listdetail" class="table table-bordered table-css table-hover" style="font-size: 15px;width:100%"></table>
+                </div>
+                <div class="row" style="background-color: #FFF">
+                    <div class="col-md-7" style="text-align:center;padding-top: 35px;">
+                        <a style="color:black;font-weight:bold;font-size:60px;margin-top:30px"><% grandtotal  | currency:"" %></a>
+                    </div>
+                    <div class="col-md-5">
+                        <div id="left-bottom">
+                            <table id="totalTable" style="width:100%; float:right; padding:5px; color:#000; background: #FFF;">
+                                <tbody>
+                                    <tr>
+                                        <td style="padding: 5px 10px;border-top: 1px solid #DDD;">Items <b><% jml %>(<% tot %>)</b></td>
+                                        <td style="padding: 5px 10px;border-top: 1px solid #DDD;">Total</td>
+                                        <td class="text-right" style="padding: 5px 10px;font-size: 14px; font-weight:bold;border-top: 1px solid #DDD;">
+                                            <span id="total"><% subtotal  | currency:""  %></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 5px 10px;">
+                                        <!-- Order Tax <a href="#" id="pptax2" tabindex="-1">
+                                        <i class="fa fa-edit"></i>
+                                        </a> -->
+                                        </td>
+                                        <td style="padding: 5px 10px;">Diskon
+                                        <a href="JavaScript:void(0);" id="ppdiscount" tabindex="-1" ng-click="setdiskon()">
+                                            <i class="fa fa-edit"></i>
+                                        </a>
+                                        </td>
+                                        <td class="text-right" style="padding: 5px 10px;font-weight:bold;">
+                                        <span id="tds"><% diskon  | currency:""  %></span>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 5px 10px; border-top: 1px solid #666; border-bottom: 1px solid #333; font-weight:bold; background:#333; color:#FFF;" colspan="2">
+                                        Total Bayar
+                                        <a href="JavaScript:void(0);" id="pshipping" tabindex="-1" ng-click="setkirim()">
+                                            <i class="fa fa-plus-square"></i>
+                                        </a>
+                                        <span id="tship"><% kirim  | currency:""  %></span>
+                                        </td>
+                                        <td class="text-right" style="padding:5px 10px 5px 10px; font-size: 14px;border-top: 1px solid #666; border-bottom: 1px solid #333; font-weight:bold; background:#333; color:#FFF;" colspan="2">
+                                        <span id="gtotal"><% grandtotal  | currency:""  %></span>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                            <div class="col-xs-12">
+                                <div class="row">
+                                    <div class="col-md-4" style="padding: 0;">
+                                        <button type="button" ng-click="holdoropen()" class="btn btn-primary btn-block btn-flat" style="height:40px;font-weight:bold;width:100%;border-radius: 0px!important;" tabindex="-1">Buka Hold</button>
+                                    </div>
+                                    <div class="col-md-4" style="padding: 0;">
+                                        <button ng-click="setpayment()" type="button" class="btn btn-success btn-block btn-flat" id="btnpayment" style="height:40px;font-weight:bold;;width:100%;border-radius: 0px!important" tabindex="-1"><i class="fa fa-money" style="margin-right: 5px;"></i>Bayar</button>
+                                    </div>
+                                    <div class="col-md-4" style="padding: 0;">
+                                        <button type="button" class="btn btn-danger btn-block btn-flat" ng-click="setmodal()" style="height:40px;font-weight:bold;;width:100%;border-radius: 0px!important" tabindex="-1">Batal</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <style>
+                .card{
+                    background-color: #FFF;
+                    padding:10px;
+                    -webkit-box-shadow: 9px 12px 50px -15px rgba(0,0,0,0.75);
+                    -moz-box-shadow: 9px 12px 50px -15px rgba(0,0,0,0.75);
+                    box-shadow: 9px 12px 50px -15px rgba(0,0,0,0.75);
+                }
+            </style>  
+            <div class="col-md-4" style="padding-left:5px;padding-right:5px">
+                <div class="card">
+                    <div class="card-body row">
+                        <div class="col-md-6">
+                            <h4 class="text-success" style="font-weight: bold;" ng-hide="stsonline!=1">Online</h4>
+                            <h4 class="text-danger" style="font-weight: bold;" ng-hide="stsonline!=0">Offline</h4>
+                            <h5 class="text-warning" style="font-weight: bold;" ng-hide="stsonline!=2">Cek Koneksi server....</h5>
+                            <table>
+                                <tr>
+                                    <td style="font-weight: bold">( F1 ) </td>
+                                    <td style="font-style: italic">Cari Barang</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold">( Delete ) </td>
+                                    <td style="font-style: italic">Hapus Data Barang</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold">( / ) </td>
+                                    <td style="font-style: italic">Ganti harga</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold">( * ) </td>
+                                    <td style="font-style: italic">Ganti Jumlah QTY</td>
+                                </tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                                <!-- <h4 class="text-primary" style="font-weight: bold;">{{ Session::get('data')->fullName }}</h4> -->
+                            <table>
+                                <tr>
+                                    <td style="font-weight: bold">( + ) </td>
+                                    <td style="font-style: italic">Bayar</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold">( F4 ) </td>
+                                    <td style="font-style: italic">Buka Hold</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold">( ctrl+P ) </td>
+                                    <td style="font-style: italic">Reprint</td>
+                                </tr>
+                                <tr>
+                                    <td style="font-weight: bold">( ctrl+B ) </td>
+                                    <td style="font-style: italic">Update Data Barang</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="display:none">
+                    <!-- /.col -->
+                    <div class="col-md-12">
+                        <div class="box box-solid">
+                        <!-- /.box-header -->
+                        <div class="box-body">
+                            <div id="carousel-example-generic" class="carousel slide" data-ride="carousel">
+                            <ol class="carousel-indicators">
+                                <li data-target="#carousel-example-generic" data-slide-to="0" class="active"></li>
+                                <li data-target="#carousel-example-generic" data-slide-to="1" class=""></li>
+                                <li data-target="#carousel-example-generic" data-slide-to="2" class=""></li>
+                            </ol>
+                            <div class="carousel-inner">
+                                <div class="item active">
+                                    <img src="{{ url('/')}}/image/promo.jpg" alt="First slide">
+    
+                                <!-- {{--  <div class="carousel-caption">
+                                    First Slide
+                                </div>  --}} -->
+                                </div>
+                                <div class="item">
+                                    <img src="{{ url('/')}}/image/promo.jpg" alt="First slide">
+    
+                                <!-- {{--  <div class="carousel-caption">
+                                    Second Slide
+                                </div>  --}} -->
+                                </div>
+                                <div class="item">
+                                    <img src="{{ url('/')}}/image/promo.jpg" alt="First slide">
+    
+                                <!-- {{--  <div class="carousel-caption">
+                                    Third Slide
+                                </div>  --}} -->
+                                </div>
+                            </div>
+                            <a class="left carousel-control" href="#carousel-example-generic" data-slide="prev">
+                                <span class="fa fa-angle-left"></span>
+                            </a>
+                            <a class="right carousel-control" href="#carousel-example-generic" data-slide="next">
+                                <span class="fa fa-angle-right"></span>
+                            </a>
+                            </div>
+                        </div>
+                        <!-- /.box-body -->
+                        </div>
+                        <!-- /.box -->
+                    </div>
+                </div>
+            </div>
+            <div ng-repeat="promo in dataPromo" class="col-md-4" style="margin-top:10px;padding-left:5px;padding-right:5px;">
+                <div class="card" style="border-radius:10px;background-color:#5cb85c!important;">
+                    <div class="card-body row">
+                        <div class="col-md-12" style="text-align:center;color:#FFF!important">
+                            <h3 style="font-weight: bold;margin-top:10px">Dapat <% promo.jml %> <% promo.hadiah %></h3>
+                            <p></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="modal_qty" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-sm" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Input Jumlah Barang</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <Input onfocus="this.select();" id="new_qty" type="number" style="width: 50px;text-align: center"/>
+                </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div id="setkirim" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Input Biaya Kirim</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <a style="color:green;font-weight: bold;font-size:35px;font-weight:bold">Biaya Kirim</a>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" input-currency ng-model="new_kirim" id="new_kirim"  my-enter="updatekirim()" class="form-control text-center" style="font-size: 35px;height: 50px;color:#000;font-weight:bold">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" ng-click="updatekirim()">Update</button>
+                </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div id="setdiskon" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Input Diskon</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <a style="color:green;font-weight: bold;font-size:35px;font-weight:bold">Biaya Kirim</a>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" input-currency ng-model="new_diskon" id="new_diskon"  my-enter="updatediskon()" class="form-control text-center" style="font-size: 35px;height: 50px;color:#000;font-weight:bold">
+                    </div>
+                    <!-- {{--  <Input onfocus="this.select();" id="new_diskon" type="number" style="width: 200px;text-align: right"/>  --}} -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" ng-click="updatediskon()">Update</button>
+                </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div id="admin" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-sm" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Supervisor</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <Input onfocus="this.select();" id="new_diskon" type="text" style="width: 200px;text-align: right"/>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" ng-click="updatediskon()">Update</button>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div id="setqty" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ubah QTY Barang</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <a style="color:green;font-weight: bold;font-size:35px;font-weight:bold">QTY</a>
+                        </div>
+                        <div class="col-md-12 text-center">
+                            <a style="color:blue;font-weight: bold;font-size:25px;font-weight:bold"><% displaybarang %></a>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" onfocus="this.select();" ng-model="edit_qty" id="edit_qty"  my-enter="updateqty()" class="form-control text-center" style="font-size: 35px;height: 50px;color:#000;font-weight:bold">
+                    </div>
+                    <!-- {{--  <Input onfocus="this.select();" id="edit_qty" my-enter="updateqty()" type="number" style="width: 50px;text-align: center"/>  --}} -->
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" ng-click="updateqty()">Update</button>
+                </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div id="setharga" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Ubah Harga Barang</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <a style="color:green;font-weight: bold;font-size:35px;font-weight:bold">HARGA</a>
+                        </div>
+                        <div class="col-md-12 text-center">
+                            <a style="color:blue;font-weight: bold;font-size:25px;font-weight:bold"><% displaybarang %></a>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" input-currency ng-model="edit_harga" id="edit_harga"  my-enter="updateharga()" class="form-control text-center" style="font-size: 35px;height: 50px;color:#000;font-weight:bold">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" ng-click="updateharga()">Update</button>
+                </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div id="printulang" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Print Ulang Nota</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12 text-center">
+                            <a style="color:green;font-weight: bold;font-size:35px;font-weight:bold">No Nota</a>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <input type="text" ng-model="nofakturprint" id="nofakturprint"  my-enter="print()" class="form-control text-center" style="font-size: 35px;height: 50px;color:#000;font-weight:bold">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary" ng-click="print()">Print Nota</button>
+                </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div id="setupdatebarang" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Update Barang Dari Server</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-12 text-center">
+                                <button type="button" ng-click="updatebarang()" id="updatebarang" class="btn btn-block btn-primary btn-lg">Update Barang</button>
+                            </div>
+                        </div>
+                    </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+
+        <div id="tambahcustomer" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Tambah</h4>
+                    </div>
+
+                    <div class="modal-body scroll_modal">
+                        <form class="form-horizontal" id="forminputcustomer">
+                            <input ng-model="idCustomer" name="idCustomer" id="idCustomer" type="text" style="display:none"/>
+                            <input ng-model="idWilayah" name="idWilayah" id="idWilayah" type="text" style="display:none"/>
+                            <div class="box-body">
+
+                                <div class="container">
+
+                                    <div class="row-lg-12">
+                                        <div class="col-lg-4">
+                                            <div class="form-group">
+                                                <label for="TipeCustomer" class="col-sm-5 control-label">Tipe Customer</label>
+                                                <div class="col-sm-7">
+                                                    <select ng-model="idTipeCustomer" class="form-control" name="idTipeCustomer" id="idTipeCustomer">
+                                                        <option value=""> </option>
+                                                        <option ng-repeat="x in tipe" ng-selected=" x.idTipeCustomer == idTipeCustomer"  value="<% x.idTipeCustomer %>"><% x.tipeCustomer %></option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="NamaLengkap" class="col-sm-5 control-label">Nama Lengkap</label>
+                                                <div class="col-sm-7">
+                                                    <input ng-model="namaCustomer" type="text" class="form-control" name="namaCustomer" id="namaCustomer" placeholder="Nama Lengkap">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="Alamat" class="col-sm-5 control-label">Alamat</label>
+                                                    <div class="col-sm-7">
+                                                        <input ng-model="alamatCustomer" type="text" class="form-control" name="alamatCustomer" id="alamatCustomer" placeholder="Alamat">
+                                                    </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="IdWilayah" class="col-sm-5 control-label">Kota</label>
+                                                <div class="col-md-7">
+                                                <div class="input-group">
+                                                    <input type="text" ng-model="kota" class="form-control" id="kota" placeholder="Kota" readonly>
+                                                    <span class="input-group-btn">
+                                                        <button type="button" class="btn btn-info btn-flat" id="btn_wilayah">
+                                                            <i class="fa fa-fw fa-search"></i>
+                                                        </button>
+                                                    </span>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="Email" class="col-sm-5 control-label">Provinsi</label>
+                                                <div class="col-sm-7">
+                                                    <input ng-model="provinsi" type="text" class="form-control" name="provinsi" id="provinsi" placeholder="Provinsi" readonly>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="Email" class="col-sm-5 control-label">Email</label>
+                                                <div class="col-sm-7">
+                                                    <input ng-model="email" type="text" class="form-control" name="email" id="email" placeholder="email">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="TanggalLahir" class="col-sm-5 control-label">Tanggal Lahir</label>
+                                                    <div class="col-sm-7">
+                                                        <input ng-model="tglLahir" type="date"  class="form-control" name="tglLahir" id="tglLahir" placeholder="Tanggal Lahir">
+                                                    </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                <label for="JenisKelamin" class="col-sm-5 control-label">Jenis Kelamin</label>
+                                                    <div class="col-sm-2">
+                                                        <label><input ng-model="jenisKelamin" type="radio" value="P" ng-checked="jenisKelamin==P" name="jenisKelamin" id="jenisKelamin"> Pria</label>
+                                                    </div>
+                                                    <div class="col-sm-2">
+                                                        <label><input ng-model="jenisKelamin" type="radio" value="W" ng-checked="jenisKelamin==W" name="jenisKelamin" id="jenisKelamin"> Wanita</label>
+                                                    </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="Pekerjaan" class="col-sm-5 control-label">Pekerjaan</label>
+                                                <div class="col-sm-7">
+                                                    <input ng-model="pekerjaan" type="text" class="form-control" name="pekerjaan" id="pekerjaan" placeholder="Pekerjaan">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                    <label for="NoHpGSM" class="col-sm-5 control-label">No. HP GSM</label>
+                                                        <div class="col-sm-7">
+                                                            <input ng-model="telpGSM" type="text" class="form-control" name="telpGSM" id="telpGSM" placeholder="No. HP GSM">
+                                                        </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="NoHpWA" class="col-sm-5 control-label">No. HP WA</label>
+                                                <div class="col-sm-7">
+                                                    <input ng-model="telpWA" type="text" class="form-control" name="telpWA" id="telpWA" placeholder="No. HP WA">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="NoTelpRumah" class="col-sm-5 control-label">No. Telp Rumah</label>
+                                                <div class="col-sm-7">
+                                                    <input ng-model="telpRumah" type="text" class="form-control" name="telpRumah" id="telpRumah" placeholder="No. Telp Rumah">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-lg-4">
+                                            <div class="form-group">
+                                                <label for="JenisIdentitas" class="col-sm-5 control-label">Jenis Identitas</label>
+                                                <div class="col-sm-7">
+                                                    <select ng-model="jenisIdentitas" class="form-control" name="jenisIdentitas" id="jenisIdentitas">
+                                                        <option value=""> </option>
+                                                        <option value="KTP">KTP</option>
+                                                        <option value="SIM">SIM</option>
+                                                        <option value="Passport">Passport</option>
+                                                        <option value="Kartu Pelajar">Kartu Pelajar</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="NoIdentitas" class="col-sm-5 control-label">No. Identitas</label>
+                                                <div class="col-sm-7">
+                                                    <input ng-model="noIdentitas" type="text" class="form-control" name="noIdentitas" id="noIdentitas" placeholder="No Identitas">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="TglExpIdentitas" class="col-sm-5 control-label">Tgl Exp Identitas</label>
+                                                <div class="col-sm-7">
+                                                    <input ng-model="tglExpIdentitas" type="date" class="form-control" name="tglExpIdentitas" id="tglExpIdentitas" placeholder="Tgl Exp Identitas">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="Keterangan" class="col-sm-5 control-label">Keterangan</label>
+                                                <div class="col-sm-7">
+                                                    <input ng-model="keterangan" type="text" class="form-control" name="keterangan" id="keterangan" placeholder="Keterangan">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="AkunFB" class="col-sm-5 control-label">Akun Facebook</label>
+                                                <div class="col-sm-7">
+                                                    <input ng-model="akunFB" type="text" class="form-control" name="akunFB" id="akunFB" placeholder="Akun Facebook">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="AkunIG" class="col-sm-5 control-label">Akun Instagram</label>
+                                                    <div class="col-sm-7">
+                                                        <input ng-model="akunIG" type="text" class="form-control" name="akunIG" id="akunIG" placeholder="Akun Instagram">
+                                                    </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="LimitPiutang" class="col-sm-5 control-label">Limit Piutang</label>
+                                                <div class="col-sm-7">
+                                                    <input ng-model="limitCredit" type="number" class="form-control" name="limitCredit" id="limitCredit" placeholder="Limit Piutang">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="BankRekeningCustomer" class="col-sm-5 control-label">Bank Rekening Customer</label>
+                                                <div class="col-sm-7">
+                                                    <input ng-model="bankRekeningCustomer" type="text" class="form-control" name="bankRekeningCustomer" id="bankRekeningCustomer" placeholder="Bank Rekening Customer">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="NamaPemilikRekeningCustomer" class="col-sm-5 control-label">Nama Rekening Customer</label>
+                                                <div class="col-sm-7">
+                                                    <input ng-model="namaPemilikRekeningCustomer" type="text" class="form-control" name="namaPemilikRekeningCustomer" id="namaPemilikRekeningCustomer" placeholder="Nama Rekening Customer">
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                <label for="NomorRekeningCustomer" class="col-sm-5 control-label">Nomor Rekening Customer</label>
+                                                <div class="col-sm-7">
+                                                    <input ng-model="nomorRekeningCustomer" type="text" class="form-control" name="nomorRekeningCustomer" id="nomorRekeningCustomer" placeholder="Nomor Rek. Customer">
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                </div>
+
+                            </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    </div>
+                </form>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal --> 
+        
+        <div id="listhold" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Transaksi Hold</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <table id="tablehold" class="table table-bordered table-css table-hover" style="font-size: 15px;width:100%"></table>
+                </div>
+                </div><!-- /.modal-content -->
+            </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+    <!-- </section> -->
+    </div>
+
+    <style>
+        .method .row{
+            margin-bottom:10px;
+        }
+        .paymen .form-control{
+            padding: 0px 10px;
+            height: 28px;
+        }
+        hr {
+            margin-top: 5px;
+            margin-bottom: 5px;
+        }
+        .methodpayment td{
+            padding-left:5px;
+            padding-bottom: 5px;
+        }
+        .form-control[disabled], .form-control[readonly], fieldset[disabled] .form-control {
+            background-color: #f7f7f7;
+            opacity: 1;
+        }
+    </style>
+
+    <div id="model_payment" class="modal fade paymen" tabindex="-1" role="dialog">
+        <div class="vertical-alignment-helper">
+            <div class="modal-dialog modal-lg  vertical-align-center" role="document">
+                <div class="modal-content">
+                    <div class="modal-body">
+                        <div class="row">
+                            <div class="col-md-9">
+                                <table width="100%" style="font-weight: bold">
+                                    <tr>
+                                        <td width="15%">Kode Member</td>
+                                        <td width="2%">:</td>
+                                        <td width="30%"><% customer.kodeCustomer %></td>
+                                        <td width="8%">Point</td>
+                                        <td width="2%">:</td>
+                                        <td ><% customer.jumlahPoint %></td>
+                                    </tr>
+                                    <tr>
+                                        <td >Nama Member</td>
+                                        <td>:</td>
+                                        <td colspan="4"><% customer.namaCustomer %></td>
+                                    </tr>
+                                </table>
+                                <hr/>
+        <!-- {{--  Pakai Point  --}} -->
+                                <div class="well well-sm well_1 methodpayment" style="padding:10px!important;margin-bottom: 0px;"  ng-hide="stsmethod!=6">
+                                    <table width="100%" style="font-weight: bold;font-size:15px" cellspacing="5" class="tabelform">
+                                        <tr>
+                                            <td width="20%" class="text-right">Belum Lunas</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" input-currency ng_model='kurangBayar' name='kurangBayar' id="kurangBayar" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Pakai Point</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" ng-change="pointproses()" input-currency ng_model='pakaiPoint' name='pakaiPoint' id="pakaiPoint" placeholder=""></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Kurang Bayar</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" input-currency ng_model='kurangBayar1' name='kurangBayar' id="kurangBayar1" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4"><button ng-click="pointoke()" type="button" class="btn btn-primary pull-right">Oke</button></td>
+                                        </tr>
+                                    </table>
+                                </div>
+        <!-- {{--  Voucher  --}}      -->
+                                <div class="well well-sm well_1 methodpayment" style="padding:10px!important;margin-bottom: 0px;" ng-hide="stsmethod!=5">
+                                    <table width="100%" style="font-weight: bold;font-size:15px" cellspacing="5" class="tabelform">
+                                        <tr>
+                                            <td width="20%" class="text-right">Kode Voucher</td>
+                                            <td width="1%">:</td>
+                                            <td width="40%"><input type="text" class="form-control" my-enter="getvoucher()" ng_model='kodevoucher' name='kodevoucher' id="kodevoucher" placeholder=""></td>
+                                        </tr>
+                                    </table>
+                                </div>
+        <!-- {{--  CASH  --}}         -->
+                                <div class="well well-sm well_1 methodpayment" style="padding:10px!important;margin-bottom: 0px;"  ng-hide="stsmethod!=1">
+                                    <table width="100%" style="font-weight: bold;font-size:15px" cellspacing="5" class="tabelform">
+                                        <tr>
+                                            <td width="20%" class="text-right">Belum Lunas</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" input-currency ng_model='kurangBayar' name='' id="" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Koreksi</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" input-currency ng_model='koreksi1' name='koreksi1' id="koreksi1" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Belum Lunas</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" input-currency ng_model='belum_lunas1' name='belum_lunas1' id="belum_lunas1" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Jumlah Bayar</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" my-enter="cashoke()"  input-currency ng-change="cashproses()" ng_model='cash' name='cash' id="cash" placeholder=""></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Kembalian</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" input-currency ng_model='kembalian1' name='kembalian1' id="kembalian1" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4"><button type="button" ng-click="cashoke()" class="btn btn-primary pull-right">Oke</button></td>
+                                        </tr>
+                                    </table>
+                                </div>
+        <!-- {{--  QRIS  --}}         -->
+                                <div class="well well-sm well_1 methodpayment" style="padding:10px!important;margin-bottom: 0px;"  ng-hide="stsmethod!=7">
+                                    <table width="100%" style="font-weight: bold;font-size:15px" cellspacing="5" class="tabelform">
+                                        <tr>
+                                            <td width="20%" valign="top" class="text-right">Keterangan</td>
+                                            <td width="1%" valign="top">:</td>
+                                            <td width="51%" ><input type="text" class="form-control text-right" my-enter="nextfocus('qr')"  ng_model='Keteranganqr' name='Keteranganqr' id="Keteranganqr" placeholder=""></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Belum Lunas</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" input-currency ng_model='kurangBayar' name='' id="" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Koreksi</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" input-currency ng_model='koreksiqr' name='koreksiqr' id="koreksiqr" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Belum Lunas</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" input-currency ng_model='belum_lunasqr' name='belum_lunasqr' id="belum_lunasqr" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Jumlah Bayar</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" my-enter="qroke()"  input-currency ng-change="qrproses()" ng_model='qr' name='qr' id="qr" placeholder=""></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Kembalian</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" input-currency ng_model='kembalianqr' name='kembalianqr' id="kembalianqr" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4"><button type="button" ng-click="qroke()" class="btn btn-primary pull-right">Oke</button></td>
+                                        </tr>
+                                    </table>
+                                </div>
+        <!-- {{--  DEBIT CARD  --}} -->
+                                <div class="well well-sm well_1 methodpayment" style="padding:10px!important;margin-bottom: 0px;" ng-hide="stsmethod!=2">
+                                    <table width="100%" style="font-weight: bold;font-size:15px" cellspacing="5" class="tabelform">
+                                        <tr>
+                                            <td width="20%" class="text-right">Belum Lunas</td>
+                                            <td width="1%">:</td>
+                                            <td colspan="4" width="51%"><input type="text" class="form-control text-right"  input-currency ng_model='belumLunas2' id="belumLunas2" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Jumlah Bayar</td>
+                                            <td width="1%">:</td>
+                                            <td colspan="4" width="51%"><input type="text" class="form-control text-right" my-enter="nextfocus('kodeBank2')" input-currency ng_model='jumlahBayar2' id="jumlahBayar2" placeholder=""></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="8"><hr/></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Nama Bank</td>
+                                            <td width="1%">:</td>
+                                            <td width="10%"><input type="text" class="form-control" my-enter="getbankdebit()" ng_model='kodeBank2' id="kodeBank2" placeholder="" ></td>
+                                            <td width="20%"><input type="text" class="form-control" ng_model='namaBank2' id="namaBank2" placeholder="" disabled>
+                                            <td width="10%" class="text-right">EDC</td>
+                                            <td width="1%"></td>
+                                            <td width="15%"><input type="text" class="form-control" my-enter="getedcdebit()" ng_model='EDC2' id="EDC2" placeholder="" ></td>
+                                            <td > <% namaEDC2%> </td>
+                                        </tr>
+                                        <tr>
+                                            <td  class="text-right">Trace Number</td>
+                                            <td >:</td>
+                                            <td  colspan="5"><input type="text" class="form-control" my-enter="debitproses()" ng_model='tracenumber2' id="tracenumber2" placeholder="" ></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="8"><button ng-click="debitproses()" type="button" class="btn btn-primary pull-right">Oke</button></td>
+                                        </tr>
+                                    </table>
+                                </div>
+        <!-- {{--  KREDIT CARD  --}} -->
+                                <div class="well well-sm well_1 methodpayment" style="padding:10px!important;margin-bottom: 0px;" ng-hide="stsmethod!=3">
+                                    <table width="100%" style="font-weight: bold;font-size:15px" cellspacing="5" class="tabelform">
+                                        <tr>
+                                            <td width="20%" class="text-right">Belum Lunas</td>
+                                            <td width="1%">:</td>
+                                            <td colspan="4" width="51%"><input type="text" class="form-control text-right" input-currency ng_model='belumLunas3' name='belumLunas3' id="belumLunas3" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Jumlah Bayar</td>
+                                            <td width="1%">:</td>
+                                            <td colspan="4" width="51%"><input type="text" class="form-control text-right"  my-enter="nextfocus('kodeBank3')"  input-currency ng_model='jumlahBayar3' name='jumlahBayar3' id="jumlahBayar3" placeholder=""></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="8"><hr/></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Nama Bank</td>
+                                            <td width="1%">:</td>
+                                            <td width="10%"><input type="text" class="form-control" my-enter="getbankkredit()" ng_model='kodeBank3' name='kodeBank3' id="kodeBank3" placeholder="" ></td>
+                                            <td width="20%"><input type="text" class="form-control" ng_model='namaBank3' name='namaBank3' id="namaBank3" placeholder="" disabled>
+                                            <td width="10%" class="text-right">EDC</td>
+                                            <td width="1%"></td>
+                                            <td width="15%"><input type="text" class="form-control" my-enter="getedckredit()" ng_model='EDC3' name='EDC3' id="EDC3" placeholder="" ></td>
+                                            <td ><% namaEDC3  %></td>
+                                        </tr>
+                                        <tr>
+                                            <td  class="text-right">Jenis Kartu</td>
+                                            <td >:</td>
+                                            <td  colspan="5"><input type="text" class="form-control" my-enter="nextfocus('cardHolder3')" ng_model='jenisKartu3' name='jenisKartu3' id="jenisKartu3" placeholder="" ></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td  class="text-right">Card Holder</td>
+                                            <td >:</td>
+                                            <td  colspan="5"><input type="text" class="form-control" my-enter="nextfocus('nomorKartu3')" ng_model='cardHolder3' name='cardHolder3' id="cardHolder3" placeholder="" ></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td  class="text-right">Nomor Kartu</td>
+                                            <td >:</td>
+                                            <td  colspan="5"><input type="text" class="form-control" my-enter="nextfocus('traceNumber3')" ng_model='nomorKartu3' name='nomorKartu3' id="nomorKartu3" placeholder="" ></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td  class="text-right">Trace Number</td>
+                                            <td >:</td>
+                                            <td  colspan="5"><input type="text" class="form-control" my-enter="kreditproses()" ng_model='traceNumber3' name='traceNumber3' id="traceNumber3" placeholder="" ></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="8"><button type="button" ng-click="kreditproses()" class="btn btn-primary pull-right">Oke</button></td>
+                                        </tr>
+                                    </table>
+                                </div>
+        <!-- {{--  OTHER  --}}         -->
+                                <div class="well well-sm well_1 methodpayment" style="padding:10px!important;margin-bottom: 0px;" ng-hide="stsmethod!=4">
+                                    <table width="100%" style="font-weight: bold;font-size:15px" cellspacing="5" class="tabelform">
+                                        <tr>
+                                            <td width="20%" class="text-right">Belum Lunas</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" input-currency ng_model='kurangBayar' name='kurangBayar' id="kurangBayar" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Koreksi</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" input-currency ng_model='koreksi4' name='koreksi4' id="koreksi4" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Belum Lunas</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" input-currency ng_model='belumLunas4' name='belumLunas4' id="belumLunas4" placeholder="" disabled></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Jumlah Bayar</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control text-right" input-currency my-enter="nextfocus('jatuhTempo')" ng-change="otherproses()" ng_model='other' name='other' id="other" placeholder="" ></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" class="text-right">Jatuh Tempo</td>
+                                            <td width="1%">:</td>
+                                            <td width="51%"><input type="text" class="form-control datepicker" my-enter="nextfocus('keteranganOther')" ng_model='jatuhTempo' name='jatuhTempo' id="jatuhTempo" placeholder="" style="width:180px"></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td width="20%" valign="top" class="text-right">Keterangan</td>
+                                            <td width="1%" valign="top">:</td>
+                                            <td width="51%" ><textarea class="form-control" style="height: 50px;" rows="3" my-enter="otheroke()" ng_model='keteranganOther' name='keteranganOther' id="keteranganOther"></textarea></td>
+                                            <td ></td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="4"><button ng-click="otheroke()" type="button" class="btn btn-primary pull-right">Oke</button></td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <hr/>
+                                <table class="table table-bordered table-condensed table-striped" style="margin-bottom: 0;">
+                                    <tbody>
+                                        <tr style="text-align:center;background:#8803fc">
+                                            <td width="5%" style="background:#8803fc;color:#FFF">No</td>
+                                            <td width="25%" style="background:#8803fc;color:#FFF">Jenis Pembayaran</td>
+                                            <td width="20%" style="background:#8803fc;color:#FFF">Jumlah Bayar</td>
+                                            <td style="background:#8803fc;color:#FFF">Keterangan</td>
+                                            <td width="5%" style="background:#8803fc;color:#FFF">action</td>
+                                        </tr>
+                                        <tr ng-repeat="x in payment" style="text-align:center;background:#8803fc">
+                                            <td style="background:#FFF;color:#000000"><% $index+1 %></td>
+                                            <td style="background:#FFF;color:#000000"><% x.jenisPembayaran %></td>
+                                            <td style="text-align:right;background:#FFF;color:#000000"><% x.JumlahBayar | currency:'' %></td>
+                                            <td style="background:#FFF;color:#000000"><% x.Keterangan %></td>
+                                            <td style="background:#FFF;color:#000000"><a class="green" href="javascript:void(0)" ng-click="delpayment($index)"><i class="bi bi-x-lg text-danger"></i></a></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                <hr/>
+                                <table width="100%" style="font-weight: bold;font-size:15px">
+                                    <tr>
+                                        <td width="45%">Total Transaksi</td>
+                                        <td width="5%">:</td>
+                                        <td width="50%" style="text-align:right"><% grandtotal | currency:"" %></td>
+                                    </tr>
+                                    <tr>
+                                        <td >Biaya Bank</td>
+                                        <td>:</td>
+                                        <td style="text-align:right"><% biayaBank | currency:"" %></td>
+                                    </tr>
+                                    <tr>
+                                        <td >Total Transaksi</td>
+                                        <td>:</td>
+                                        <td style="text-align:right"><% totalTransaksi | currency:"" %></td>
+                                    </tr>
+                                    <tr>
+                                        <td >Jumlah Bayar</td>
+                                        <td>:</td>
+                                        <td style="text-align:right"><% jumlahBayar | currency:"" %></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="font-size:20px">Kurang Bayar</td>
+                                        <td style="font-size:20px">:</td>
+                                        <td style="font-size:20px;text-align:right"><% kurangBayar | currency:"" %></td>
+                                    </tr>
+                                </table>
+                            </div>
+                            <div class="col-md-3 method">
+                                <!-- <div class="row">
+                                    <div class="col-md-12">
+                                        <button type="button" class="btn btn-lg btn-block btn-success" ng-click="changemethod(6)">Pakai Point</button>
+                                    </div>
+                                </div> -->
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <button type="button" class="btn btn-lg btn-block btn-success" ng-click="setcash()" id="btnmethodcash">Uang Cash (F5)</button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <button type="button" class="btn btn-lg btn-block btn-success" ng-click="setqr()" id="btnmethodother">QRIS</button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <button type="button" class="btn btn-lg btn-block btn-success" ng-click="changemethod(5)" id="btnmethodvoucher">Voucher (F6)</button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <button type="button" class="btn btn-lg btn-block btn-success" ng-click="setdebet()" id="btnmethoddebit">Debit Card (F7)</button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <button type="button" class="btn btn-lg btn-block btn-success" ng-click="setkredit()" id="btnmethodcredit">Credit Card (F8)</button>
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <button type="button" class="btn btn-lg btn-block btn-success" ng-click="setother()" id="btnmethodother">Other (F9)</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button ng-disabled="kurangBayar>0" ng-click="bayar()"  class="btn btn-block btn-lg btn-primary" id="submitsale" tabindex="-1">Bayar</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+    </div>
+
+    <div id="viewpay" class="modal fade paymen" tabindex="1" role="dialog">
+        <div class="vertical-alignment-helper">
+            <div class="modal-dialog modal-lg vertical-align-center" role="document">
+                <div class="modal-content shadow-lg p-3 mb-5 bg-white rounded border-10 border-primary">
+                     <div class="modal-header">
+                        <h4 class="modal-title">BAYAR</h4>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <table class="table table-bordered table-condensed table-striped" style="font-size:25px;font-weight: bold">
+                            <tr>
+                                <td>Total Transaksi</td>
+                                <td style="text-align:right">Rp. <% totalTransaksi | currency:"" %></td>
+                            </tr>
+                            <tr ng-repeat="x in payment">
+                                <td><% x.jenisPembayaran %></td>
+                                <td style="text-align:right">Rp. <% x.JumlahBayar | currency:'' %></td>
+                            </tr>
+                            <tr>
+                                <td>Kembalian</td>
+                                <td style="text-align:right">Rp. <% kembalian | currency:"" %></td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id='simpanpos' ng-click="simpan()">Bayar</button>
+                    </div>
+                </div>
+                <!-- /.modal-content -->
+            </div>
+            <!-- /.modal-dialog -->
+        </div>
+    </div>    
+  </body>
+    <link href="https://cdn.datatables.net/v/bs5/dt-2.1.6/kt-2.12.1/sc-2.4.3/sl-2.1.0/datatables.min.css" rel="stylesheet">  
+    <script src="https://cdn.datatables.net/v/bs5/dt-2.1.6/kt-2.12.1/sc-2.4.3/sl-2.1.0/datatables.min.js"></script>
+    <script src="./assets/bootstrap-5.3.3-dist/js/bootstrap.min.js"></script>
+    <script src="./assets/jquery.scannerdetection.js"></script>
+    <script src="./assets/popUp.js"></script>
+    <script src="./assets/popUpCustomer.js"></script>
+    <script src="./assets/popUpBarangAndre.js"></script>
+    <script src="./pos_offline.js"></script>
+</html>
