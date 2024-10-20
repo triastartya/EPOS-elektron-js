@@ -1114,6 +1114,29 @@ app.whenReady().then(() => {
       return { succsess: false, message: error.message };
     }
   });
+
+  ipcMain.handle('print-ulang', async (param) => {
+    try {
+      let data = db.prepare(`SELECT * FROM transaksi WHERE FakturPenjualan=? ORDER BY id DESC`).get(param);
+      data.TransPenjualanDet = JSON.parse(data.TransPenjualanDet);
+      data.TransPenjualanDetPayment = JSON.parse(data.TransPenjualanDetPayment);
+      data.promoHadiah = JSON.parse(data.promoHadiah);
+      let login = db.prepare(`SELECT * FROM login`).get();
+      let toko = db.prepare(`SELECT * FROM toko`).get();
+      let kasir = db.prepare(`SELECT * FROM kasir`).get();
+      return {
+        success: true, message: 'oke', data: {
+          transaksi: data,
+          login: login,
+          toko: toko,
+          kasir: kasir
+        }
+      };
+    } catch (error) {
+      console.log('error log', error);
+      return { succsess: false, message: error.message };
+    }
+  });
   //======
   //====== insert penjualan POS
   ipcMain.handle('kirim-transaksi-server', async ()=>{

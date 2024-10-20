@@ -29,6 +29,7 @@ contextBridge.exposeInMainWorld('api', {
     getMaster: () => ipcRenderer.invoke('get-master'),
     simpanTransaksi: (param) => ipcRenderer.invoke('simpan-transaksi',param),
     printUlang: () => ipcRenderer.invoke('print-ulang'),
+    printUlangParam: (param) => ipcRenderer.invoke('print-ulang-param',param),
     kirimTransaksiServer: () => ipcRenderer.invoke('kirim-transaksi-server'),
     //tutup kasir
     kasirBelumTutupKasir: () => ipcRenderer.invoke('kasir-belum-tutup-kasir'),

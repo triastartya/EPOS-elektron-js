@@ -1,4 +1,4 @@
-
+window.api.loginPageMenu();
 app.controller("myCtrl", function($scope,$http,API) {
     $scope.list_printer = [];
     $scope.id_kasir = 0;

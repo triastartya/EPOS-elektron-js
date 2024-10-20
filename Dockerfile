@@ -24,7 +24,7 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/*
 
 # Install Node.js dan npm
-RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - && \
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
     apt-get install -y nodejs
 
 # Install Electron dan electron-builder global

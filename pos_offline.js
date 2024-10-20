@@ -311,23 +311,24 @@ app.controller("myCtrl", function($scope,$http,API) {
 
     $scope.stsonline = 2
 
-    // $scope.ping = function(){
-    //     $http.get(API.base_url + '/api_data/tesping').then(function(res){
-    //         //console.log(res.data.stsconnect);
-    //         if(res.data.stsconnect=="1"){
-    //             $scope.stsonline = 1
-    //         }else{
-    //             $scope.stsonline = 0
-    //         }
-    //     });
-    // }
+    $scope.ping = async function(){
+        online = await window.api.cekOnline();
+        console.log(online);
+        if(online.success){
+            $scope.stsonline = 1
+        }else{
+            $scope.stsonline = 0
+        }
+        $scope.$apply();
+    }
 
-    // $scope.ping();
+    $scope.ping();
 
-    // window.setInterval(function(){
-    //      $scope.ping();
-    //      $scope.getnotifbarang();
-    // },10000);
+    window.setInterval(function(){
+         $scope.ping();
+        //  $scope.getnotifbarang();
+    },10000);
+
     $scope.transfer = true;
     window.setInterval( async()=>{
         if($scope.transfer){
@@ -2178,15 +2179,16 @@ app.controller("myCtrl", function($scope,$http,API) {
 
     $scope.print = function(){
         if($scope.nofakturprint != ''){
-            Swal.fire({title: 'Loading Printer..',onOpen: () => {Swal.showLoading()}})
-            $http.get(API.base_url + '/api_data/offline/print/'+$scope.nofakturprint).then(function(res){
-                Swal.close();
+            // Swal.fire({title: 'Loading Printer..',onOpen: () => {Swal.showLoading()}})
+            // $http.get(API.base_url + '/api_data/offline/print/'+$scope.nofakturprint).then(function(res){
+            //     Swal.close();
 
-                if(res.data.statusCode != '200'){
-                    $('#printulang').modal('hide');
-                    Swal.fire({type: 'error',title: 'Oops...',text: res.data.message,})
-                }
-            })
+            //     if(res.data.statusCode != '200'){
+            //         $('#printulang').modal('hide');
+            //         Swal.fire({type: 'error',title: 'Oops...',text: res.data.message,})
+            //     }
+            // })
+            window.location.href = './nota.html?id='+$scope.nofakturprint+'&print=1'
         }else{
             window.location.href = './nota.html?id=0&print=0'
             // Swal.fire({title: 'Loading Printer..',onOpen: () => {Swal.showLoading()}})

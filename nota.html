@@ -36,6 +36,10 @@
                         let response = await window.api.printUlang();
                         $scope.data = response.data;
                         console.log($scope.data);
+                    }else{
+                        let response = await window.api.printUlangParam($scope.id);
+                        $scope.data = response.data;
+                        console.log($scope.data);
                     }
                     $scope.$apply();
                     window.addEventListener("afterprint",()=>{
