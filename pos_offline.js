@@ -281,6 +281,25 @@ function diskon(hargaAwal,dc){
 }
 
 app.controller("myCtrl", function($scope,$http,API) {
+
+    $scope.quit = async function(){
+        await window.api.appQuit();
+    }
+
+    $scope.tutupkasir = async function(){
+        await window.api.linkTutupkasir();
+    }
+
+    $scope.refund = async function(){
+        await window.api.linkRefund();
+    }
+
+    $scope.dev = async function(){
+        await window.api.devTools();
+    }
+
+    
+
     $scope.idhold =null;
     $scope.status = false;
     $scope.stsbarcode = true;
@@ -354,9 +373,10 @@ app.controller("myCtrl", function($scope,$http,API) {
       <p style="color:red;" id="error"></p>
     </div>
     `;
-
-    angular.element(window).ready(function () {
-
+    $scope.platform = '';
+    angular.element(window).ready(async function () {
+        $scope.platform = await window.api.getPlatform('ok');
+        console.log($scope.platform);
         // $('.carousel').carousel()
 
         $(window).scannerDetection();

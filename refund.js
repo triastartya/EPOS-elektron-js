@@ -4,11 +4,26 @@ Array.prototype.sum = function(prop) {
 };
 
 app.controller("myCtrl", function($scope,$http,API) {
-    
-    angular.element(window).ready( async ()=>{
+    $scope.quit = async function(){
+        await window.api.appQuit();
+    }
+
+    $scope.pos = async function(){
+        await window.api.linkPos();
+    }
+
+    $scope.dev = async function(){
+        await window.api.devTools();
+    }
+
+    $scope.platform = '';
+    angular.element(window).ready(async function () {
+        $scope.platform = await window.api.getPlatform('ok');
+        console.log($scope.platform);
         $scope.$apply();
         Swal.close();
     });
+    
     $scope.penjualan = null;
     $scope.no_penjualan = '';
     $scope.keterangan = '';

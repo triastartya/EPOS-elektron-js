@@ -3,6 +3,14 @@ const { contextBridge, ipcRenderer } = require('electron');
 contextBridge.exposeInMainWorld('api', {
     loginPageMenu: () => ipcRenderer.send('login-page-menu'),
     loginPagePos: () => ipcRenderer.send('login-page-pos'),
+    appQuit: () => ipcRenderer.send('app-quit'),
+    linkSetting:()=>ipcRenderer.send('link-setting'),
+    linkLogin:()=>ipcRenderer.send('link-login'),
+    linkRefund:()=>ipcRenderer.send('link-refund'),
+    linkTutupkasir:()=>ipcRenderer.send('link-tutupkasir'),
+    linkPos:()=>ipcRenderer.send('link-pos'),
+    devTools:() =>  ipcRenderer.send('dev-tools'),
+    //=========
     cekOnline:() => ipcRenderer.invoke('cek-online'),
     getListKasir:()=> ipcRenderer.invoke('get_list_kasir'),
     getKasir: () => ipcRenderer.invoke('get-kasir'),
@@ -39,7 +47,9 @@ contextBridge.exposeInMainWorld('api', {
     // refund
     getPenjualanDetail: (param) => ipcRenderer.invoke('get_penjualan_detail',param),
     simpanRefund:(param) => ipcRenderer.invoke('simpan_refund',param),
-    getRefundDetail: (param) => ipcRenderer.invoke('get_refund_detail',param)
+    getRefundDetail: (param) => ipcRenderer.invoke('get_refund_detail',param),
+
+    getPlatform: (param) => ipcRenderer.invoke('get-platform',param)
 });
 
 window.addEventListener('DOMContentLoaded', () => {

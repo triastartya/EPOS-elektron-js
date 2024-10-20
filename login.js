@@ -3,6 +3,7 @@ app.controller("myCtrl", function($scope,$http,API) {
     $scope.username = '';
     $scope.password = '';
     $scope.online = false;
+    $scope.platform = '';
     angular.element(window).ready(async function () {
         Swal.fire({title: 'Loading Persiapan Kasir...',onOpen: () => {
             Swal.showLoading()
@@ -20,15 +21,28 @@ app.controller("myCtrl", function($scope,$http,API) {
         }else{
             $scope.online = false;
         }
-       
         kasir = await window.api.getKasir();
         console.log(kasir);
         if(!kasir.success){
             window.location.href = './setting.html';
         }
+        $scope.platform = await window.api.getPlatform('ok');
+        console.log($scope.platform);
         Swal.close();
         $scope.$apply();
     });
+
+    $scope.quit = async function(){
+        await window.api.appQuit();
+    }
+
+    $scope.setting = async function(){
+        await window.api.linkSetting();
+    }
+
+    $scope.dev = async function(){
+        await window.api.devTools();
+    }
 
     $scope.validator_login = $("#formLogin").validate({
         rules: {

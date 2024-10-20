@@ -3,6 +3,7 @@ const Database = require('better-sqlite3');
 const path = require('path');
 const axios = require('axios');
 const getmac = require('getmac').default;
+const os = require('os');
 
 let mainWindow;
 const db = new Database('epos.db');
@@ -838,15 +839,30 @@ app.whenReady().then(() => {
     }
   })
 
+  ipcMain.handle('get-platform', async (event,param) =>{
+    const platform = os.platform();
+    return platform;
+  });
+
   ipcMain.handle('get-printer', async (event, param) => {
-    const printers = await mainWindow.webContents.getPrintersAsync();
-    // let p = getmac;
-    return printers;
+    const platform = os.platform();
+    console.log(platform);
+    if (platform == 'win32') {
+      printers = await mainWindow.webContents.getPrintersAsync();
+      return printers;
+    } else{
+      printers = await mainWindow.webContents.getPrinters();
+      return printers;
+    }
   })
 
   ipcMain.handle('tesprint', async (event, param) => {
-    const printers = await mainWindow.webContents.getPrintersAsync();
-    // console.log(printers);
+    const platform = os.platform();
+    if (platform == 'win32') {
+      const printers = await mainWindow.webContents.getPrintersAsync();
+    } else {
+      const printers = await mainWindow.webContents.getPrinters();
+    }
     kasir = db.prepare(`SELECT * FROM kasir`).all();
     if (kasir.length == 0) {
       return { success: false, message: 'kasir belum di setting' };
@@ -1407,6 +1423,34 @@ ipcMain.on('login-page-menu', () => {
 
 ipcMain.on('login-page-pos', () => {
   createMenuPOS();
+});
+
+ipcMain.on('app-quit', () => {
+  app.quit();
+});
+
+ipcMain.on('dev-tools', () => {
+  mainWindow.webContents.toggleDevTools();
+});
+
+ipcMain.on('link-setting', () => {
+  mainWindow.loadURL('file://' + __dirname + '/setting.html');
+});
+
+ipcMain.on('link-login', () => {
+  mainWindow.loadURL('file://' + __dirname + '/login.html');
+});
+
+ipcMain.on('link-refund', () => {
+  mainWindow.loadURL('file://' + __dirname + '/refund.html');
+});
+
+ipcMain.on('link-tutupkasir', () => {
+  mainWindow.loadURL('file://' + __dirname + '/tutupkasir.html');
+});
+
+ipcMain.on('link-pos', () => {
+  mainWindow.loadURL('file://' + __dirname + '/index.html');
 });
 
 // Quit the app when all windows are closed.

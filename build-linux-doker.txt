@@ -3,3 +3,14 @@ docker run -it -v ${PWD}:/app electron-glibc227 /bin/bash
 cd /app
 npm install
 electron-builder --linux
+
+"devDependencies": {
+    "electron": "^14.0.0",
+    "electron-builder": "^22.0.0",
+    "electron-rebuild": "^2.0.0"
+  },
+  "dependencies": {
+    "axios": "^1.7.7",
+    "better-sqlite3": "^7.0.0",
+    "getmac": "^6.6.0"
+}

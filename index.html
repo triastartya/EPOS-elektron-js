@@ -118,6 +118,16 @@
             <h4 class="text-primary">Loading...</h4>
         </div>
     </div>
+    <header class="shadow p-1 mb-2 sticky-top bg-light" ng-show="platform!='win32'">
+		<div class="d-flex flex-row justify-content-between">
+		  <div class="d-flex flex-row">
+			<a href="#" ng-click="refund()" class="btn btn-outline-primary btn-sm me-3">Refund</a>
+            <a href="#" ng-click="tutupkasir()" class="btn btn-outline-primary btn-sm me-3">Tutup Kasir</a>
+			<a href="#" ng-click="dev()" class="btn btn-outline-primary btn-sm me-3"> Developer Tools</a>
+			<a href="#" ng-click="quit()" class="btn btn-outline-primary btn-sm me-3"> Exit</a>
+		  </div>
+		</div>
+	</header>
     <div style="padding: 10px;">
     <!-- <section class="content"> -->
         <button type="button" id="btnqty" ng-click="editqty()" style="display: none">Update</button>

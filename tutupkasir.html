@@ -15,6 +15,15 @@
 	<link href="https://cdn.datatables.net/v/bs5/dt-2.1.6/kt-2.12.1/sc-2.4.3/sl-2.1.0/datatables.min.css" rel="stylesheet">  
     <script src="https://cdn.datatables.net/v/bs5/dt-2.1.6/kt-2.12.1/sc-2.4.3/sl-2.1.0/datatables.min.js"></script>
 <body ng-app="app"  ng-controller="myCtrl">
+	<header class="shadow p-1 mb-2 sticky-top bg-light" ng-show="platform!='win32'">
+		<div class="d-flex flex-row justify-content-between">
+		  <div class="d-flex flex-row">
+            <a href="#" ng-click="pos()" class="btn btn-outline-primary btn-sm me-3">Penjualan</a>
+			<a href="#" ng-click="dev()" class="btn btn-outline-primary btn-sm me-3"> Developer Tools</a>
+			<a href="#" ng-click="quit()" class="btn btn-outline-primary btn-sm me-3"> Exit</a>
+		  </div>
+		</div>
+	</header>
 	<section class="h-100">
 		<div class="container h-100">
 			<div class="row">

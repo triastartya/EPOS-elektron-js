@@ -4,6 +4,7 @@ app.controller("myCtrl", function($scope,$http,API) {
     $scope.id_kasir = 0;
     $scope.ip_server = '';
     $scope.printer = '';
+    $scope.platform = '';
     angular.element(window).ready( async ()=>{
         Swal.fire({title: 'Loading..',onOpen: () => {
             Swal.showLoading()
@@ -12,9 +13,23 @@ app.controller("myCtrl", function($scope,$http,API) {
             get:'default'
         });
         console.log($scope.list_printer);
+        $scope.platform = await window.api.getPlatform('ok');
+        console.log($scope.platform);
         $scope.$apply();
         Swal.close();
     });
+
+    $scope.quit = async function(){
+        await window.api.appQuit();
+    }
+
+    $scope.login = async function(){
+        await window.api.linkLogin();
+    }
+
+    $scope.dev = async function(){
+        await window.api.devTools();
+    }
 
     $scope.getkasir = async ()=>{
         Swal.fire({title: 'Loading..',onOpen: () => {

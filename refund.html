@@ -14,6 +14,15 @@
 	<script src="./assets/jquery-validation-1.19.1/dist/additional-methods.min.js"></script>
 </head>
 <body ng-app="app"  ng-controller="myCtrl">
+	<header class="shadow p-1 mb-2 sticky-top bg-light" ng-show="platform!='win32'">
+		<div class="d-flex flex-row justify-content-between">
+		  <div class="d-flex flex-row">
+            <a href="#" ng-click="pos()" class="btn btn-outline-primary btn-sm me-3">Penjualan</a>
+			<a href="#" ng-click="dev()" class="btn btn-outline-primary btn-sm me-3"> Developer Tools</a>
+			<a href="#" ng-click="quit()" class="btn btn-outline-primary btn-sm me-3"> Exit</a>
+		  </div>
+		</div>
+	</header>
 	<section class="h-100 p-2">
 		<div class="row">
 			<div class="col-sm-12">

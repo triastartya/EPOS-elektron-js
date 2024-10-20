@@ -4,6 +4,17 @@ Array.prototype.sum = function(prop) {
 };
 
 app.controller("myCtrl", function($scope,$http,API) {
+    $scope.quit = async function(){
+        await window.api.appQuit();
+    }
+
+    $scope.pos = async function(){
+        await window.api.linkPos();
+    }
+
+    $scope.dev = async function(){
+        await window.api.devTools();
+    }
     $scope.input_tutup_kasir = null;
     $scope.payment_method = null;
     $scope.total_modal = 0;
@@ -23,7 +34,12 @@ app.controller("myCtrl", function($scope,$http,API) {
             { title:"Modal",      "data": "modal_kasir",render: $.fn.dataTable.render.number( '.', ',', 0, '' )},
         ]
     });
+
+    $scope.platform = '';
+
     angular.element(window).ready( async ()=>{
+        $scope.platform = await window.api.getPlatform('ok');
+        console.log($scope.platform);
         
         Swal.fire({title: 'Loading..',onOpen: () => {
             Swal.showLoading()
