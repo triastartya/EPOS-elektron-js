@@ -28,4 +28,5 @@ RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
     apt-get install -y nodejs
 
 # Install Electron dan electron-builder global
-RUN npm install -g electron@latest electron-builder
+# RUN npm install -g electron@latest electron-builder
+# RUN npm install 
