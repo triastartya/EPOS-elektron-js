@@ -349,14 +349,19 @@ app.controller("myCtrl", function($scope,$http,API) {
     },10000);
 
     $scope.transfer = true;
+
+    $scope.kirimTrans = async function(){
+        $scope.transfer = false;
+        data = await window.api.kirimTransaksiServer();
+        if(data.message!='kosong'){
+            console.log('transfer ke server',data);
+        }
+        $scope.transfer = true;
+    }
+
     window.setInterval( async()=>{
         if($scope.transfer){
-            $scope.transfer = false;
-            let data = await window.api.kirimTransaksiServer();
-            if(data.message!='kosong'){
-                console.log('transfer ke server',data);
-            }
-            $scope.transfer = true;
+            $scope.kirimTrans();
         }
     },1000);
 

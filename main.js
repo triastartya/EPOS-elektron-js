@@ -1131,7 +1131,7 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.handle('print-ulang', async (param) => {
+  ipcMain.handle('print-ulang-param', async (param) => {
     try {
       let data = db.prepare(`SELECT * FROM transaksi WHERE FakturPenjualan=? ORDER BY id DESC`).get(param);
       data.TransPenjualanDet = JSON.parse(data.TransPenjualanDet);
@@ -1159,6 +1159,7 @@ app.whenReady().then(() => {
     try {
       let proses = [];
       const transaksi = db.prepare('SELECT * FROM transaksi where kirim=0 limit 0,1').all();
+      console.log(transaksi);
       if(transaksi.length==0){
         return {success:false,message:'kosong'}
       }
@@ -1184,7 +1185,7 @@ app.whenReady().then(() => {
         }else{
           update = db.prepare(`UPDATE transaksi set kirim=1,kirim_code='500',kirim_response='${kirim.data.message}' where id=${trans.id} and kirim=0`).run();
         }
-        proses.push(kirim.data);
+        proses.push('response',kirim.data);
         console.log('kirim => ',kirim);
       }
       return {success:true,message:'oke',data:proses}
