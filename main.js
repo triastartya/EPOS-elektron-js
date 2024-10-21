@@ -1131,7 +1131,7 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.handle('print-ulang', async (param) => {
+  ipcMain.handle('print-ulang-param', async (param) => {
     try {
       let data = db.prepare(`SELECT * FROM transaksi WHERE FakturPenjualan=? ORDER BY id DESC`).get(param);
       data.TransPenjualanDet = JSON.parse(data.TransPenjualanDet);
