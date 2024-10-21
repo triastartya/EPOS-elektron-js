@@ -16,10 +16,6 @@
       "target": "nsis"
     },
     "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
       "category": "Utility",
       "maintainer": "Triastartya <triastartya@gmail.com>"
     }
