@@ -30,4 +30,4 @@ RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
 
 # Install Electron dan electron-builder global
 # RUN npm install -g electron@latest electron-builder
-# RUN npm install 
+RUN npm install 

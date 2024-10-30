@@ -1,7 +1,8 @@
 docker build -t electron-glibc227 .
-docker run -it -v ${PWD}:/app electron-glibc227 /bin/bash
+docker run -it -v "D:\WORK\AKU\TRIJUNA RETAIL\KASIR\EPOS-JS:/app" electron-glibc227 /bin/bash
 cd /app
 npm install
+npx electron-rebuild
 electron-builder --linux
 
 "devDependencies": {
