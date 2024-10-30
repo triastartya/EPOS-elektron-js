@@ -382,6 +382,7 @@ app.controller("myCtrl", function($scope,$http,API) {
     angular.element(window).ready(async function () {
         $scope.platform = await window.api.getPlatform('ok');
         console.log($scope.platform);
+        $scope.$apply();
         // $('.carousel').carousel()
 
         $(window).scannerDetection();

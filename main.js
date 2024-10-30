@@ -271,8 +271,8 @@ function createWindow() {
     },
     webSecurity: false,
   });
-  // mainWindow.loadURL('file://' + __dirname + '/login.html');
-  mainWindow.loadURL('file://' + __dirname + '/history.html');
+  mainWindow.loadURL('file://' + __dirname + '/login.html');
+  // mainWindow.loadURL('file://' + __dirname + '/history.html');
   // mainWindow.loadURL('file://' + __dirname + '/refund.html');
   // mainWindow.loadURL('file://' + __dirname + '/nota_refund.html?id=9');
   
@@ -509,6 +509,7 @@ const createMenuPOS = () => {
       label: 'File',
       submenu: [
         { label: 'Penjualan EPOS', click: () => { mainWindow.loadURL('file://' + __dirname + '/index.html'); } },
+        { label: 'History Penjualan', click: () => { mainWindow.loadURL('file://' + __dirname + '/history.html'); } },
         { label: 'Refund', click: () => { mainWindow.loadURL('file://' + __dirname + '/refund.html'); } },
         { label: 'Tutup Kasir', click: () => { mainWindow.loadURL('file://' + __dirname + '/tutupkasir.html'); } },
         { label: 'Logout', click: () => { mainWindow.loadURL('file://' + __dirname + '/login.html'); } },
