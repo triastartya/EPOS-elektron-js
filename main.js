@@ -869,8 +869,7 @@ app.whenReady().then(() => {
     }
     mainWindow.webContents.print({
       silent: true,
-      deviceName: 'EPSON TM-U220 Receipt',
-      //deviceName: kasir[0].printer,
+      deviceName: kasir[0].printer,
       copies: 1,
     }, (success, error) => {
       if (success) {

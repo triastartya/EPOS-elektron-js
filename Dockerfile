@@ -20,12 +20,14 @@ RUN apt-get update && apt-get install -y \
     libgbm1 \
     libpangoft2-1.0-0 \
     libharfbuzz0b \
+    build-essential \
     xdg-utils && \
     rm -rf /var/lib/apt/lists/*
 
 # Install Node.js dan npm
-RUN curl -sL https://deb.nodesource.com/setup_10.x | bash - && \
+RUN curl -sL https://deb.nodesource.com/setup_14.x | bash - && \
     apt-get install -y nodejs
 
 # Install Electron dan electron-builder global
-RUN npm install -g electron@latest electron-builder
+# RUN npm install -g electron@latest electron-builder
+RUN npm install 
