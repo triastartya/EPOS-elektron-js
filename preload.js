@@ -49,7 +49,10 @@ contextBridge.exposeInMainWorld('api', {
     simpanRefund:(param) => ipcRenderer.invoke('simpan_refund',param),
     getRefundDetail: (param) => ipcRenderer.invoke('get_refund_detail',param),
 
-    getPlatform: (param) => ipcRenderer.invoke('get-platform',param)
+    getPlatform: (param) => ipcRenderer.invoke('get-platform',param),
+    // history
+    history:(param) => ipcRenderer.invoke('history',param),
+    updateTransaksi:(param) => ipcRenderer.invoke('update-transaksi',param)
 });
 
 window.addEventListener('DOMContentLoaded', () => {

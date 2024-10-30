@@ -271,7 +271,8 @@ function createWindow() {
     },
     webSecurity: false,
   });
-  mainWindow.loadURL('file://' + __dirname + '/login.html');
+  // mainWindow.loadURL('file://' + __dirname + '/login.html');
+  mainWindow.loadURL('file://' + __dirname + '/history.html');
   // mainWindow.loadURL('file://' + __dirname + '/refund.html');
   // mainWindow.loadURL('file://' + __dirname + '/nota_refund.html?id=9');
   
@@ -1413,6 +1414,37 @@ app.whenReady().then(() => {
       }
     } catch (error) {
       return {success:false,message:error.message}
+    }
+  })
+
+  //=== history
+  ipcMain.handle('history', (event, param) => {
+    try {
+      console.log(param);
+      let data = [];
+      if(param.status==''){
+        history = db.prepare(`select * from transaksi where date(waktu) =?`);
+        data = history.all(param.tanggal);
+      }else{
+        history = db.prepare(`select * from transaksi where date(waktu) =? and kirim_code = ?`);
+        data = history.all(param.tanggal,param.status);
+      }
+      return { success: true, data: data, message: 'oke' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  })
+
+  ipcMain.handle('update-transaksi', (event, param) => {
+    try {
+      console.log(param);
+      tmp = db.prepare(`
+      update transaksi set TransPenjualanDet=? ,TransPenjualanDetPayment=?  where id = ?
+      `);
+      const data = tmp.run(JSON.stringify(param.TransPenjualanDet),JSON.stringify(param.TransPenjualanDetPayment),param.id);
+      return { success: true, message: 'oke' };
+    } catch (error) {
+      return { success: false, message: error.message };
     }
   })
 })
