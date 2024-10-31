@@ -41,9 +41,10 @@ app.controller("myCtrl", function($scope,$http,API) {
         }
     }
     $scope.tambah = function(item){
-        console.log(item);
+        console.log('item',item);
+        console.log('detail',item);
         let cek =  $scope.detail.find(function(e){
-            return  e.id_barang = item.id_barang
+            return  e.id_barang == item.id_barang
         })
         if(cek){
             Swal.fire({icon: 'error',title: 'Opps....',text: 'sudah ada di refund'})
@@ -55,13 +56,11 @@ app.controller("myCtrl", function($scope,$http,API) {
     $scope.changeQty = function(item,idx){
         console.log('item =>',item);
         console.log('index =>',idx);
-        // if(parseInt(item.qty_jual) > item.qty_refund){
-        //     $scope.detail[idx].qty_refund = parseInt(item.qty_jual);
-        //     item.qty_refund = parseInt(item.qty_jual);
-        //     Swal.fire({icon: 'error',title: 'Opps....',text: 'tidak boleh lebih dari qty jual'})
-        // }else{
-            $scope.detail[idx].sub_total = (parseFloat($scope.detail[idx].harga_jual) - parseFloat($scope.detail[idx].diskon1)) * item.qty_refund;
-        // }
+        if(parseFloat(item.qty_jual) < parseFloat(item.qty_refund)){
+            $scope.detail[idx].qty_refund = item.qty_jual
+            Swal.fire({icon: 'error',title: 'Opps....',text: 'tidak boleh lebih dari qty jual'})
+        }
+        $scope.detail[idx].sub_total = (parseFloat($scope.detail[idx].harga_jual) - parseFloat($scope.detail[idx].diskon1)) * item.qty_refund;
     }
     $scope.hapus = function(idx){
         $scope.detail.splice(idx,1);
