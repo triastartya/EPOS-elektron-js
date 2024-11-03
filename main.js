@@ -841,6 +841,19 @@ app.whenReady().then(() => {
     }
   })
 
+  ipcMain.handle('get-barang-by-kode', async (event, param) => {
+    try {
+      console.log('by kode param',param);
+      barang = db.prepare(`select * from barang where kodeBarang ='${param.id}'`);
+      const data = barang.get();
+      console.log(data)
+      return { success: true, data: data };
+    } catch (error) {
+      console.error('Login error:', error);
+      return { success: false, message: error };
+    }
+  })
+
   ipcMain.handle('get-platform', async (event,param) =>{
     const platform = os.platform();
     return platform;
@@ -870,7 +883,7 @@ app.whenReady().then(() => {
       return { success: false, message: 'kasir belum di setting' };
     }
     mainWindow.webContents.print({
-      silent: true,
+      silent: false,
       deviceName: kasir[0].printer,
       copies: 1,
     }, (success, error) => {
@@ -1059,6 +1072,40 @@ app.whenReady().then(() => {
     return { edc: edc, bank: bank, minimal: minimal };
   })
 
+
+  ipcMain.handle('nomor',async()=>{
+    try {
+        login = db.prepare(`SELECT * FROM login`).get();
+        if(!login){
+          return { success: false, message: 'terjadi kesalahan saat login silahkan login ulang' };
+        }
+        kasir = db.prepare(`SELECT * FROM kasir`).all();
+        if (kasir.length==0) {
+          return { success: false, message: 'kasir belum di setting' };
+        }
+        toko = db.prepare(`SELECT * FROM toko`).all();
+        let tanggal = date_now();
+        let counter = 1;
+        if(kasir[0].tanggal){ //tanggal tidak null
+          if (tanggal == kasir[0].tanggal) { //beda tanggal
+            if(kasir[0].last_no_transaksi){
+              counter = kasir[0].last_no_transaksi + 1;
+            }else{
+              counter = 1;
+            }
+          }
+        }else{
+          counter = 1;
+        }
+        let c = counter.toString().padStart(5, '0');
+        let depan = prefix();
+        let noFakturPenjualan = `${toko[0].kode_lokasi}.${kasir[0].id_kasir}.EPOS.${depan}${c}`;
+        return {success:true,data:noFakturPenjualan}      
+    } catch (error) {
+        return {success:false,message:error.message}
+    }
+  })
+
   ipcMain.handle('simpan-transaksi', async (event, param) => {
     try {
       console.log(param);
@@ -1132,9 +1179,11 @@ app.whenReady().then(() => {
     }
   });
 
-  ipcMain.handle('print-ulang-param', async (param) => {
+  ipcMain.handle('print-ulang-param', async (event, param) => {
     try {
+      console.log('FakturPenjualan',param);
       let data = db.prepare(`SELECT * FROM transaksi WHERE FakturPenjualan=? ORDER BY id DESC`).get(param);
+      console.log('Data print ulang',data);
       data.TransPenjualanDet = JSON.parse(data.TransPenjualanDet);
       data.TransPenjualanDetPayment = JSON.parse(data.TransPenjualanDetPayment);
       data.promoHadiah = JSON.parse(data.promoHadiah);

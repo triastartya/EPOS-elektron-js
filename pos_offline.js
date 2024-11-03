@@ -508,7 +508,7 @@ app.controller("myCtrl", function($scope,$http,API) {
     })
 
 
-    $('#getproduct').keydown(function (e) {
+    $('#getproduct').keydown( async function (e) {
         if (e.which == 112) {
             e.preventDefault();
             // console.log(whichFocus);
@@ -533,13 +533,23 @@ app.controller("myCtrl", function($scope,$http,API) {
 
                 if(ksts){
                     // $http.post(API.base_url + '/api_data/offline/caribarcode',$parm).then(function(res){
-                    $http.post(API.base_url + '/api_data/offline/carikode',$parm).then(function(res){
-                        if(res.data.statusCode==200){
-                            item =res.data.data
+                        
+                    // $http.post(API.base_url + '/api_data/offline/carikode',$parm).then(function(res){
+                    //     if(res.data.statusCode==200){
+                    //         item =res.data.data
+                    //         $scope.add_detail(item,1)
+                    //         $('#getproduct').val('')
+                    //     }
+                    // })
+
+                    let response = await window.api.getBarangByKode($parm);
+                    console.log('barang',response);
+                    if(response.success){
+                        if(response.data){
+                            item =response.data
                             $scope.add_detail(item,1)
-                            $('#getproduct').val('')
                         }
-                    })
+                    }
                 }
             }
         }
@@ -1087,12 +1097,16 @@ app.controller("myCtrl", function($scope,$http,API) {
     $scope.getbarcode = async function(id){
         $parm = {
             'id':id
-        };
+        };  
         let response = await window.api.getBarangByBarcode(id);
         console.log('barcode',response);
         if(response.success){
-            item =response.data
-            $scope.add_detail(item,1)
+            if(response.data){
+                item =response.data
+                $scope.add_detail(item,1)
+            }else{
+                Swal.fire({type: 'error',title: 'Oops...',text: 'barang dengan barcode '+id+' tidak di temukan!',})
+            }
         }else{
             Swal.fire({type: 'error',title: 'Oops...',text: response.message,})
         }
@@ -2538,11 +2552,12 @@ app.controller("myCtrl", function($scope,$http,API) {
         }, 500);
     }
     $scope.lastno = ''
-    $scope.nobukti = function(){
-        // $http.get(API.base_url + '/api_data/offline/nobukti').then(function(res){
-        //     // console.log(res.data.data.FakturPenjualan)
-        //     $scope.lastno = res.data.data
-        // });
+    $scope.nobukti = async function(){
+        let response = await window.api.getNomor();
+        console.log('no bukti',response)
+        if(response.success){
+            $scope.lastno = response.data
+        }
     }
     $scope.nobukti();
 });

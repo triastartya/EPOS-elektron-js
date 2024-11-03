@@ -22,6 +22,7 @@ contextBridge.exposeInMainWorld('api', {
     tesPrint: (param) =>ipcRenderer.invoke('tesprint',param),
     getBarangById: (param) => ipcRenderer.invoke('get-barang-by-id',param),
     getBarangByBarcode: (param) => ipcRenderer.invoke('get-barang-by-barcode',param),
+    getBarangByKode: (param) => ipcRenderer.invoke('get-barang-by-kode',param),
 
     //=========== kasir
     getDataMember: (param)=> ipcRenderer.invoke('get-data-member',param),
@@ -35,6 +36,7 @@ contextBridge.exposeInMainWorld('api', {
     allHold: () => ipcRenderer.invoke('get-hold'),
     deleteHold: (param) => ipcRenderer.invoke('delete-hold',param),
     getMaster: () => ipcRenderer.invoke('get-master'),
+    getNomor: () => ipcRenderer.invoke('nomor'),
     simpanTransaksi: (param) => ipcRenderer.invoke('simpan-transaksi',param),
     printUlang: () => ipcRenderer.invoke('print-ulang'),
     printUlangParam: (param) => ipcRenderer.invoke('print-ulang-param',param),

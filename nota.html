@@ -32,7 +32,9 @@
                     // $scope.data = window.api.tesPrint({
                     //     id:id
                     // });
-                    if($scope.print){
+                    console.log('id',$scope.id);
+                    console.log('print',$scope.print);
+                    if($scope.print==0){
                         let response = await window.api.printUlang();
                         $scope.data = response.data;
                         console.log($scope.data);
