@@ -22,6 +22,7 @@ app.controller("myCtrl", function($scope,$http,API) {
     $scope.sisa_saldo = 0;
     $scope.keterangan = '';
     $scope.penerimaan = 0;
+    $scope.setor_bank = 0;
     var table
     table   =  $('#listdatatable').DataTable({
         "ordering"        : false,
@@ -73,7 +74,7 @@ app.controller("myCtrl", function($scope,$http,API) {
 
     $scope.changependapatan = function(){
         $scope.penerimaan = $scope.payment_method.sum("nominal")
-        $scope.sisa_saldo =  $scope.penerimaan + $scope.total_modal
+        $scope.sisa_saldo =  $scope.penerimaan + $scope.total_modal + $scope.setor_bank
     }
     
     $scope.simpan = function(){
@@ -91,6 +92,7 @@ app.controller("myCtrl", function($scope,$http,API) {
                     "penerimaan":$scope.penerimaan,
                     "sisa_saldo":$scope.sisa_saldo,
                     "keterangan":$scope.keterangan,
+                    "setor_bank":$scope.setor_bank,
                     "detail": $scope.payment_method
                 }
                 console.log(data);

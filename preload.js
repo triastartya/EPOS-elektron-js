@@ -54,7 +54,10 @@ contextBridge.exposeInMainWorld('api', {
     getPlatform: (param) => ipcRenderer.invoke('get-platform',param),
     // history
     history:(param) => ipcRenderer.invoke('history',param),
-    updateTransaksi:(param) => ipcRenderer.invoke('update-transaksi',param)
+    updateTransaksi:(param) => ipcRenderer.invoke('update-transaksi',param),
+    // update barang
+    notifBarang:(param) => ipcRenderer.invoke('notif-barang',param),
+    prosesUpdateBarang: (param) => ipcRenderer.invoke('proses-update-barang',param)
 });
 
 window.addEventListener('DOMContentLoaded', () => {

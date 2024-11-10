@@ -7,6 +7,13 @@ const os = require('os');
 
 let mainWindow;
 const db = new Database('epos.db');
+//===== create table version
+db.prepare(
+  `CREATE TABLE IF NOT EXISTS version (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    version INTEGER
+  )`
+).run();
 //===== create table kasir
 db.prepare(
   `CREATE TABLE IF NOT EXISTS kasir (
@@ -752,7 +759,14 @@ app.whenReady().then(() => {
         }
       });
 
-      const insertMany = db.transaction((barang, edc, bank, minimal, customer, payment_method) => {
+      const version_barang = await axios.get(kasir[0].ip_server + '/api/version_barang', {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${login.data.data.token}`
+        }
+      });
+
+      const insertMany = db.transaction((barang, edc, bank, minimal, customer, payment_method,version_barang) => {
         db.exec(`DELETE FROM barang`);
         db.exec(`DELETE FROM sqlite_sequence WHERE name='barang'`);
         db.exec(`DELETE FROM bank`);
@@ -765,6 +779,7 @@ app.whenReady().then(() => {
         db.exec(`DELETE FROM sqlite_sequence WHERE name='customer'`);
         db.exec(`DELETE FROM payment_method`);
         db.exec(`DELETE FROM sqlite_sequence WHERE name='payment_method'`);
+        db.exec(`DELETE FROM version`);
 
         const in_barang = db.prepare(`INSERT INTO barang 
         (
@@ -783,6 +798,7 @@ app.whenReady().then(() => {
           (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
         `);
         const in_payment_method = db.prepare(`INSERT INTO payment_method (id_payment_method,nama_payment_method,keterangan) VALUES (?,?,?)`);
+        const in_version = db.prepare(`INSERT INTO version (version) VALUES (?)`);
         for (const user of barang) {
           in_barang.run(
             user.id_barang, user.kode_barang, user.barcode, user.nama_barang, user.kode_satuan,
@@ -807,20 +823,92 @@ app.whenReady().then(() => {
         for (const pay of payment_method){
           in_payment_method.run(pay.id_payment_method,pay.nama_payment_method,pay.keterangan);
         }
+        in_version.run(version_barang.version);
       });
+      console.log(version_barang);
       insertMany(
         barang.data.data,
         edc.data.data.data,
         bank.data.data.data,
         minimal.data.data,
         customer.data.data.data,
-        payment_method.data.data.data
+        payment_method.data.data.data,
+        version_barang.data.data
       );
       return { success: true, message: 'reload data successful' };
     } catch (error) {
       console.error('Login error:', error);
       return { success: false, message: error };
     }
+  });
+
+  ipcMain.handle('notif-barang', async () => {
+    const kasir = db.prepare(`SELECT * FROM kasir`).all();
+    if (kasir.length == 0) {
+      return { success: false, message: 'kasir belum di setting' };
+    }
+    version_kasir =  db.prepare(`SELECT * FROM version`).get();
+    const response = await axios.get(kasir[0].ip_server + '/api/version_barang', {
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    version_server = response.data.data
+    if(version_kasir.version !=version_server.version){
+      return true;
+    }else{
+      return false;
+    }
+  });
+
+  ipcMain.handle('proses-update-barang', async () => {
+    const kasir = db.prepare(`SELECT * FROM kasir`).all();
+    const login = await axios.post(kasir[0].ip_server + '/api/login', {
+      'email': 'admin@gmail.com',
+      'password': '123'
+    });
+    if (kasir.length == 0) {
+      return { success: false, message: 'kasir belum di setting' };
+    }
+    const version_barang = await axios.get(kasir[0].ip_server + '/api/version_barang', {
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    });
+    const barang = await axios.get(kasir[0].ip_server + '/api/getbarangpos', {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${login.data.data.token}`
+      }
+    });
+    const insertMany = db.transaction((barang, version_barang)=>{
+      db.exec(`DELETE FROM barang`);
+      db.exec(`DELETE FROM sqlite_sequence WHERE name='barang'`);
+      db.exec(`DELETE FROM version`);
+      const in_barang = db.prepare(`INSERT INTO barang 
+        (
+        idBarang,kodeBarang,barcode,namaBarang,kodeSatuanKecil,hargaJual,
+        jumlahGrosir1,hargaGrosir1,jumlahGrosir2,hargaGrosir2,
+        diskon,diskonSyaratMinBelanja,setPromoHadiahID,minimalNominal,isBerlakuKelipatan,jumlahHadiah,
+        hadiah,qtyOnHand)
+        VALUES
+        (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`);
+      const in_version = db.prepare(`INSERT INTO version (version) VALUES (?)`);
+      for (const user of barang) {
+        in_barang.run(
+          user.id_barang, user.kode_barang, user.barcode, user.nama_barang, user.kode_satuan,
+          parseInt(user.harga_jual), parseInt(user.qty_grosir1), parseInt(user.harga_grosir1), parseInt(user.qty_grosir2), parseInt(user.harga_grosir2),
+          0, 0, 0, 0, (user.is_kelipatan_hadiah) ? 1 : 0, 0, '-', 100
+        );
+      }
+      in_version.run(version_barang.version);
+    })
+
+    insertMany(
+      barang.data.data,
+      version_barang.data.data
+    );
+    return { success: true, message: 'update barang successful' };
   });
 
   ipcMain.handle('get-barang-by-id', async (event, param) => {
@@ -1066,10 +1154,11 @@ app.whenReady().then(() => {
 
   //=== payment
   ipcMain.handle('get-master', async () => {
+    const kasir = db.prepare(`select * from login`).get();
     const edc = db.prepare(`select * from edc`).all();
     const bank = db.prepare(`select * from bank`).all();
     const minimal = db.prepare(`select * from minimal`).all();
-    return { edc: edc, bank: bank, minimal: minimal };
+    return { edc: edc, bank: bank, minimal: minimal,kasir:kasir };
   })
 
 
@@ -1213,7 +1302,7 @@ app.whenReady().then(() => {
     try {
       let proses = [];
       const transaksi = db.prepare('SELECT * FROM transaksi where kirim=0 limit 0,1').all();
-      console.log(transaksi);
+      // console.log(transaksi);
       if(transaksi.length==0){
         return {success:false,message:'kosong'}
       }
@@ -1227,7 +1316,7 @@ app.whenReady().then(() => {
       });
       for (const trans of transaksi) {
         let request = mappingToSend(trans);
-        console.log('request => ',request);
+        // console.log('request => ',request);
         kirim = await axios.post(kasir.ip_server + '/api/penjualan/insert',request, {
           headers: {
             'Content-Type': 'application/json',
@@ -1239,8 +1328,8 @@ app.whenReady().then(() => {
         }else{
           update = db.prepare(`UPDATE transaksi set kirim=1,kirim_code='500',kirim_response='${kirim.data.message}' where id=${trans.id} and kirim=0`).run();
         }
-        proses.push('response',kirim.data);
-        console.log('kirim => ',kirim);
+        // proses.push('response',kirim.data);
+        // console.log('kirim => ',kirim);
       }
       return {success:true,message:'oke',data:proses}
     } catch (error) {

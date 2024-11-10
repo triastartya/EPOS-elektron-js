@@ -343,9 +343,21 @@ app.controller("myCtrl", function($scope,$http,API) {
 
     $scope.ping();
 
+    $scope.sts_notif_barang =true
+    $scope.notifbarang = false
+    $scope.version_barang = async function(){
+        $scope.sts_notif_barang = false;
+        response = await window.api.notifBarang();
+        console.log('notif barang',response);
+        $scope.notifbarang = response;
+        $scope.sts_notif_barang = true;
+    }
+
     window.setInterval(function(){
-         $scope.ping();
-        //  $scope.getnotifbarang();
+        $scope.ping();
+        if($scope.sts_notif_barang){
+            $scope.version_barang();
+        }
     },10000);
 
     $scope.transfer = true;
@@ -358,7 +370,7 @@ app.controller("myCtrl", function($scope,$http,API) {
         }
         $scope.transfer = true;
     }
-
+    
     window.setInterval( async()=>{
         if($scope.transfer){
             $scope.kirimTrans();
@@ -427,13 +439,19 @@ app.controller("myCtrl", function($scope,$http,API) {
         modalready = true;
     });
     
-    $scope.updatebarang = function(){
+    $scope.updatebarang = async function(){
         Swal.fire({title: 'Tunggu Sedang Proses Update Barang..',allowOutsideClick: false,onOpen: () => {Swal.showLoading()}})
-        $http.get(API.base_url + '/api_data/proses/updatebarang').then(function(res){
-            $('#setupdatebarang').modal('hide')
-            $scope.getnotifbarang();
-            Swal.fire('Berhasil Update Barang!','','success')
-        })
+        let response = await window.api.prosesUpdateBarang();
+        console.log('proses update barang',response);
+        if(response.success){
+            $('#setupdatebarang').modal('hide');
+            Swal.fire(response.message,'....','success').then(function() {
+                $scope.version_barang();
+                
+            });
+        }else{
+            Swal.fire({type: 'error',title: 'Oops...',text: response.message,})
+        }
     }
 
     $scope.barcode = function(){
@@ -1498,6 +1516,7 @@ app.controller("myCtrl", function($scope,$http,API) {
         $scope.bank=response.bank;
         $scope.edc=response.edc;
         $scope.minimal=response.minimal;
+        $scope.nama_kasir = response.kasir.nama;
     }
     $scope.getmaster();
     
