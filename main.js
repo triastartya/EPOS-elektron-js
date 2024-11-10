@@ -919,7 +919,7 @@ app.whenReady().then(() => {
 
   ipcMain.handle('get-barang-by-barcode', async (event, param) => {
     try {
-      barang = db.prepare(`select * from barang where barcode =${param}`);
+      barang = db.prepare(`select * from barang where TRIM(barcode)=TRIM('${param}')`);
       const data = barang.get();
       console.log(data)
       return { success: true, data: data };
