@@ -49,7 +49,7 @@ app.controller("myCtrl", function($scope,$http,API) {
         if(cek){
             Swal.fire({icon: 'error',title: 'Opps....',text: 'sudah ada di refund'})
         }else{
-            item.qty_refund = 1;
+            item.qty_refund = item.qty_jual;
             $scope.detail.push(item);
         }
     }

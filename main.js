@@ -883,7 +883,7 @@ app.whenReady().then(() => {
       return { success: false, message: 'kasir belum di setting' };
     }
     mainWindow.webContents.print({
-      silent: false,
+      silent: true,
       deviceName: kasir[0].printer,
       copies: 1,
     }, (success, error) => {
@@ -1162,6 +1162,7 @@ app.whenReady().then(() => {
       data.TransPenjualanDet = JSON.parse(data.TransPenjualanDet);
       data.TransPenjualanDetPayment = JSON.parse(data.TransPenjualanDetPayment);
       data.promoHadiah = JSON.parse(data.promoHadiah);
+      let customer = db.prepare(`SELECT * FROM customer WHERE idCustomer = ${data.IdCustomer}`).get();
       let login = db.prepare(`SELECT * FROM login`).get();
       let toko = db.prepare(`SELECT * FROM toko`).get();
       let kasir = db.prepare(`SELECT * FROM kasir`).get();
@@ -1170,7 +1171,8 @@ app.whenReady().then(() => {
           transaksi: data,
           login: login,
           toko: toko,
-          kasir: kasir
+          kasir: kasir,
+          customer: (customer)?customer:null
         }
       };
     } catch (error) {
@@ -1187,6 +1189,7 @@ app.whenReady().then(() => {
       data.TransPenjualanDet = JSON.parse(data.TransPenjualanDet);
       data.TransPenjualanDetPayment = JSON.parse(data.TransPenjualanDetPayment);
       data.promoHadiah = JSON.parse(data.promoHadiah);
+      let customer = db.prepare(`SELECT * FROM customer WHERE idCustomer = ${data.IdCustomer}`).get();
       let login = db.prepare(`SELECT * FROM login`).get();
       let toko = db.prepare(`SELECT * FROM toko`).get();
       let kasir = db.prepare(`SELECT * FROM kasir`).get();
@@ -1195,7 +1198,8 @@ app.whenReady().then(() => {
           transaksi: data,
           login: login,
           toko: toko,
-          kasir: kasir
+          kasir: kasir,
+          customer: (customer)?customer:null
         }
       };
     } catch (error) {
