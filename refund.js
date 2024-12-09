@@ -68,7 +68,6 @@ app.controller("myCtrl", function($scope,$http,API) {
     $scope.refund = null;
     $scope.total_modal = 0;
     $scope.simpan_refund = async function(){
-        $scope.total_modal = $scope.detail.sum('sub_total');
         let d = [];
         $scope.detail.forEach((item, index) => {
             d.push({
@@ -81,9 +80,10 @@ app.controller("myCtrl", function($scope,$http,API) {
                 diskon2 : item.diskon2,
                 display_diskon1 : item.display_diskon1,
                 display_diskon2 : item.display_diskon2,
-                sub_total : item.sub_total,
+                sub_total : parseFloat(item.sub_total),
             })
         });
+        $scope.total_modal = d.sum('sub_total');
         $scope.refund = {
             id_penjualan : $scope.penjualan.id_penjualan,
             keterangan : $scope.keterangan,

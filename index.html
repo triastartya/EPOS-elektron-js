@@ -350,6 +350,27 @@
                         <!-- /.box -->
                     </div>
                 </div>
+                <hr/>
+                <h5>Promo</h5>
+                <div style="overflow-y: auto; height: 50vh;overflow-x: hidden;">
+                    <div class="scroll-text">
+                        <div class="card" style="margin-top: 5px;" ng-repeat="x in settingpromo.diskon | filter: {is_tampil_pos: 1}">
+                            <div class="card-body row" style="padding: 2px; padding-left: 10px;">
+                                <h6 class="text-primary"><% x.nama_promo_diskon %></h6>
+                            </div>
+                        </div>
+                        <div class="card" style="margin-top: 5px;" ng-repeat="x in settingpromo.hadiah | filter: {is_tampil_pos: 1}">
+                            <div class="card-body row" style="padding: 2px; padding-left: 10px;">
+                                <h6 class="text-success"><% x.nama_promo_hadiah %></h6>
+                            </div>
+                        </div>
+                        <div class="card" style="margin-top: 5px;" ng-repeat="x in settingpromo.bonus | filter: {is_tampil_pos: 1}">
+                            <div class="card-body row" style="padding: 2px; padding-left: 10px;">
+                                <h6 class="text-warning"><% x.nama_promo_bonus %></h6>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div ng-repeat="promo in dataPromo" class="col-md-4" style="margin-top:10px;padding-left:5px;padding-right:5px;">
                 <div class="card" style="border-radius:10px;background-color:#5cb85c!important;">

@@ -370,6 +370,18 @@ app.controller("myCtrl", function($scope,$http,API) {
         }
         $scope.transfer = true;
     }
+
+    $scope.settingpromo = {
+        diskon:[],
+        hadiah:[],
+        bonus:[]
+    }
+    $scope.getpromo = async function(){
+        let response = await window.api.promo();
+        $scope.settingpromo = response.data;
+        console.log('promo =>',$scope.settingpromo);
+    }
+    $scope.getpromo();
     
     window.setInterval( async()=>{
         if($scope.transfer){
@@ -680,7 +692,7 @@ app.controller("myCtrl", function($scope,$http,API) {
                 { title: "Qty","data": "qty","className": "text-right font-weight-bold"},
                 { title: "Satuan","data": "satuan"},
                 { title: "Harga","data": "harga","className": "text-right", render: $.fn.dataTable.render.number( '.', ',', 0, '' ) },
-                { title: "D","data": "d1", "className": "text-right" },
+                { title: "D","data": "d1", "className": "text-right", render: $.fn.dataTable.render.number( '.', ',', 0, '' ) },
                 { title: "D2","data": "d2", "className": "text-right" ,visible:false},
                 { title: "diskon","data": "diskon", "className": "text-right" ,visible:false},
                 { title: "Total","data": "total", "className": "text-right", render: $.fn.dataTable.render.number( '.', ',', 0, '' ) },
@@ -747,6 +759,13 @@ app.controller("myCtrl", function($scope,$http,API) {
             case 1:
                 tableDetail.row($scope.indexdetail).select();
                 tableDetail.cell($scope.indexdetail,":eq(4)").focus();
+                var element = $('div.dt-scroll-body'); // Your scrollable container
+                var selectedElement = element.find('.selected'); // Find the selected element inside
+
+                if (selectedElement.length) {
+                    var offset = selectedElement.offset().top - element.offset().top + element.scrollTop();
+                    element.animate({ scrollTop: offset }, 300); // Scroll smoothly
+                }
               break;
             case 2:
                 $scope.focustable()
@@ -766,114 +785,142 @@ app.controller("myCtrl", function($scope,$http,API) {
     }
 
 //===========================================================================
-    $scope.add_detail = function(item,qty){
-        sts = true;
-        idx = '';
-        harga = item.hargaJual
-    //================= hitung harga ===========
-        if(parseInt(qty)>=parseInt(item.jumlahGrosir1) && parseInt(item.jumlahGrosir1) != 0){
-            harga = item.hargaGrosir1
-            if(parseInt(qty)>=parseInt(item.jumlahGrosir2 && parseInt(item.jumlahGrosir2) != 0)){
-                harga = item.hargaGrosir2
-            }
-        }
-        //================ cek disko diskonSyaratMinBelanja =====================
-        syarat_diskon = (parseInt(qty) >= item.diskonSyaratMinBelanja)? item.diskon : 0 ;
-        console.log('atas',syarat_diskon);
-        //==========================================
-        //hargadiskon = diskon(harga,syarat_diskon) ;
-        hargadiskon =(item.isDiskonNominal)? syarat_diskon : diskon(harga,syarat_diskon);
-        // hargadiskon2 = diskon(parseInt(item.harga)-hargadiskon,item.d2);
-        hdiskon = hargadiskon //+ hargadiskon2;
-        h = parseInt(harga)- hdiskon;
-        total =  parseInt(qty) *  h ;
-
-        angular.forEach($scope.detail, function(value, key){
-            if(value.kode==item.kodeBarang){
-                sts = false;
-                qty = parseInt(qty)+value.qty;
-                idx = key;
-                $scope.indexdetail = key
-                //================= hitung harga ===========
-                // console.log(parseInt(qty))
-                // console.log(parseInt(item.jumlahGrosir1))
-                if(parseInt(qty) >= parseInt(item.jumlahGrosir1) && parseInt(item.jumlahGrosir1) != 0){
-                    harga = item.hargaGrosir1
-                    // console.log(parseInt(item.hargaJual))
-                    if(parseInt(qty)>=parseInt(item.jumlahGrosir2) && parseInt(item.jumlahGrosir2) != 0){
-                        harga = item.hargaGrosir2
-                    }
-                }
-                //================ cek disko diskonSyaratMinBelanja =====================
-                syarat_diskon = (parseInt(qty) >= item.diskonSyaratMinBelanja)? item.diskon : 0 ;
-                console.log('bawah',syarat_diskon);
-                //==========================================
-                //hargadiskon = diskon(harga,syarat_diskon) ;
-                hargadiskon =(item.isDiskonNominal)? syarat_diskon : diskon(harga,syarat_diskon);
-                // hargadiskon2 = diskon(parseInt(item.hargaJual)-hargadiskon,item.d2);
-                hdiskon = hargadiskon //+ hargadiskon2;
-                h = parseInt(harga)- hdiskon;
-                total =  parseInt(qty) *  h ;
-            }
-        });
-
-        if(sts){
-            newdata = {
-                id              : item.idBarang,
-                kode            : item.kodeBarang,
-                name            : item.namaBarang,
-                harga           : harga,
-                diskon_awal     : item.diskon,
-                d1              : syarat_diskon,
-                diskon          : hdiskon,
-                d2              : 0,
-                satuan          : item.kodeSatuanKecil,
-                qty             : parseInt(qty),
-                old_qty         : qty,
-                total           : total,
-                hargaJual       : item.hargaJual,
-                jumlahGrosir1   : item.jumlahGrosir1,
-                jumlahGrosir2   : item.jumlahGrosir2,
-                hargaGrosir1    : item.hargaGrosir1,
-                hargaGrosir2    : item.hargaGrosir2,
-                setPromoHadiahID    :item.setPromoHadiahID,
-                // kodePromo        :item.Promo.kodePromo,
-                // namaPromo        :item.Promo.namaPromo,
-                minimalNominal      :item.minimalNominal,
-                isBerlakuKelipatan  :item.isBerlakuKelipatan,
-                jumlahHadiah        :item.jumlahHadiah,
-                hadiah              :item.hadiah,
-                diskonSyaratMinBelanja:item.diskonSyaratMinBelanja,
-                isDiskonNominal : item.isDiskonNominal
-                
-            }
-            $scope.datainsert = newdata;
-            $scope.detail.push(newdata)
-            $scope.inserttemp(newdata)
-            action = 2;
-        //==================
+    $scope.add_detail = async function(item,qty){
+        console.log(item);
+        if(item.hargaJual<=0){
+            setTimeout(function(){
+                Swal.fire({type: 'error',title: 'harga tidak boleh kurang dari 0',text: item.namaBarang+' @'+number_format(item.hargaJual,0,',','.'),}).then(function(){
+                    // $('#btnharga').click();
+                });            
+            },500)
         }else{
-            $.grep($scope.detail, function (e,index) {
-                if (index == idx) {
-                    e.qty	    = qty;
-                    e.old_qty	= qty;
-                    e.total	    = total;
-                    e.harga	    = harga;
+            sts = true;
+            idx = '';
+            harga = item.hargaJual;
+            
+        //================= hitung harga ===========
+            if(parseInt(qty)>=parseInt(item.jumlahGrosir1) && parseInt(item.jumlahGrosir1) != 0){
+                harga = item.hargaGrosir1
+                if(parseInt(qty)>=parseInt(item.jumlahGrosir2 && parseInt(item.jumlahGrosir2) != 0)){
+                    harga = item.hargaGrosir2
+                }
+            }
+            //================ cek disko diskonSyaratMinBelanja =====================
+            item.minimal_qty    =0;
+            item.isDiskonNominal=0;
+            item.diskonPromo    =0;
+            let res_promo_diskon = await window.api.promoDiskonBarang(item.idBarang);
+            console.log('res_promo_diskon',res_promo_diskon);
+            if(res_promo_diskon.success){
+                if(res_promo_diskon.data){
+                    item.minimal_qty    =res_promo_diskon.data.minimal_qty;
+                    item.isDiskonNominal=res_promo_diskon.data.is_nominal;
+                    item.diskonPromo    =res_promo_diskon.data.diskon;
+                }
+            }else{
+                console.log('error tarik data promoDiskonBarang '+res_promo_diskon.message);
+            }
+            //===============================
+            syarat_diskon = (parseInt(qty) >= (item.minimal_qty)?item.minimal_qty:0)? item.diskonPromo : 0 ;
+            console.log('atas',syarat_diskon);
+            //===============================
+            //hargadiskon = diskon(harga,syarat_diskon) ;
+            hargadiskon =(item.isDiskonNominal)? syarat_diskon : diskon(harga,syarat_diskon);
+            // hargadiskon2 = diskon(parseInt(item.harga)-hargadiskon,item.d2);
+            hdiskon = hargadiskon //+ hargadiskon2;
+            h = parseInt(harga)- hdiskon;
+            total =  parseInt(qty) *  h ;
+
+            angular.forEach($scope.detail, function(value, key){
+                if(value.kode==item.kodeBarang){
+                    sts = false;
+                    qty = parseInt(qty)+value.qty;
+                    idx = key;
+                    $scope.indexdetail = key
+                    //================= hitung harga ===========
+                    // console.log(parseInt(qty))
+                    // console.log(parseInt(item.jumlahGrosir1))
+                    if(parseInt(qty) >= parseInt(item.jumlahGrosir1) && parseInt(item.jumlahGrosir1) != 0){
+                        harga = item.hargaGrosir1
+                        // console.log(parseInt(item.hargaJual))
+                        if(parseInt(qty)>=parseInt(item.jumlahGrosir2) && parseInt(item.jumlahGrosir2) != 0){
+                            harga = item.hargaGrosir2
+                        }
+                    }
+                    //================ cek disko diskonSyaratMinBelanja =====================
+                    syarat_diskon = (parseInt(qty) >= (item.minimal_qty)?item.minimal_qty:0)? item.diskonPromo : 0 ;
+                    console.log('bawah',syarat_diskon);
+                    //==========================================
+                    //hargadiskon = diskon(harga,syarat_diskon) ;
+                    hargadiskon =(item.isDiskonNominal)? syarat_diskon : diskon(harga,syarat_diskon);
+                    // hargadiskon2 = diskon(parseInt(item.hargaJual)-hargadiskon,item.d2);
+                    hdiskon = hargadiskon //+ hargadiskon2;
+                    h = parseInt(harga)- hdiskon;
+                    total =  parseInt(qty) *  h ;
                 }
             });
-            action = 1;
-            $scope.edittemp($scope.detail[idx]);
-        }
-        $scope.hitung(false,action)
-        ksts=true
-        $('#getproduct').val('')
 
-        if($scope.stsqty){
-            $scope.indexdetail = $scope.detail.length -1;
-            $('#edit_qty').focus();
-            $('#edit_qty').select();
-            $scope.stsqty = false;
+            if(sts){
+                newdata = {
+                    id              : item.idBarang,
+                    kode            : item.kodeBarang,
+                    name            : item.namaBarang,
+                    harga           : harga,
+                    diskon_awal     : item.diskonPromo,
+                    d1              : syarat_diskon,
+                    diskon          : hdiskon,
+                    d2              : 0,
+                    satuan          : item.kodeSatuanKecil,
+                    qty             : parseInt(qty),
+                    old_qty         : qty,
+                    total           : total,
+                    hargaJual       : item.hargaJual,
+                    jumlahGrosir1   : item.jumlahGrosir1,
+                    jumlahGrosir2   : item.jumlahGrosir2,
+                    hargaGrosir1    : item.hargaGrosir1,
+                    hargaGrosir2    : item.hargaGrosir2,
+                    setPromoHadiahID    :item.setPromoHadiahID,
+                    // kodePromo        :item.Promo.kodePromo,
+                    // namaPromo        :item.Promo.namaPromo,
+                    minimalNominal      :item.minimalNominal,
+                    isBerlakuKelipatan  :item.isBerlakuKelipatan,
+                    jumlahHadiah        :item.jumlahHadiah,
+                    hadiah              :item.hadiah,
+                    diskonSyaratMinBelanja:(item.minimal_qty)?item.minimal_qty:0,
+                    isDiskonNominal : item.isDiskonNominal
+                    
+                }
+                $scope.datainsert = newdata;
+                $scope.detail.push(newdata)
+                $scope.inserttemp(newdata)
+                action = 2;
+            //==================
+            }else{
+                $.grep($scope.detail, function (e,index) {
+                    if (index == idx) {
+                        e.d1        = syarat_diskon;
+                        e.diskon    = hdiskon,
+                        e.qty	    = qty;
+                        e.old_qty	= qty;
+                        e.total	    = total;
+                        e.harga	    = harga;
+                    }
+                });
+                action = 1;
+                $scope.edittemp($scope.detail[idx]);
+            }
+            $scope.hitung(false,action)
+            ksts=true
+            $('#getproduct').val('')
+
+            if($scope.stsqty){
+                $scope.indexdetail = $scope.detail.length -1;
+                $('#edit_qty').focus();
+                $('#edit_qty').select();
+                $scope.stsqty = false;
+            }
         }
+        
     }
 
     $scope.updateqty = function(){
@@ -939,16 +986,7 @@ app.controller("myCtrl", function($scope,$http,API) {
         idx = $scope.indexdetail;
         x = $scope.detail[idx];
         console.log(x);
-        // if(qty >= parseInt(x.jumlahGrosir1) && parseInt(x.jumlahGrosir1) != 0){
-        //     x.harga = x.hargaGrosir1
-        //     if(qty>=parseInt(x.jumlahGrosir2) && parseInt(x.jumlahGrosir2) != 0){
-        //         x.harga = x.hargaGrosir2
-        //     }
-        // }else{
-        //     x.harga = x.hargaJual
-        // }
         x.harga = x.hargaJual
-
         if(qty >= parseInt(x.jumlahGrosir1) && parseInt(x.jumlahGrosir1) != 0){
             x.harga = x.hargaGrosir1
             if(qty>=parseInt(x.jumlahGrosir2) && parseInt(x.jumlahGrosir2) != 0){
@@ -965,7 +1003,7 @@ app.controller("myCtrl", function($scope,$http,API) {
         hargadiskon =(x.isDiskonNominal)? syarat_diskon : diskon(x.harga,syarat_diskon);
         console.log('isDiskonNominal',x.isDiskonNominal)
         hdiskon = hargadiskon
-        h = parseInt(x.harga)- hdiskon;
+        h = parseInt(x.harga) - hdiskon;
         total =  qty *  h ;
 
         $.grep($scope.detail, function (e,index) {
@@ -1025,14 +1063,17 @@ app.controller("myCtrl", function($scope,$http,API) {
         x.harga = $scope.edit_harga
         qty = x.qty
 
-        hargadiskon = diskon(x.harga,x.d1)
-
+        syarat_diskon = ( qty >= x.diskonSyaratMinBelanja)? x.diskon_awal : 0 ;
+        hargadiskon =(x.isDiskonNominal)? syarat_diskon : diskon(x.harga,syarat_diskon);
+        
         hdiskon = hargadiskon
         h = parseInt(x.harga)- hdiskon
         total =  qty *  h
 
         $.grep($scope.detail, function (e,index) {
             if (index == idx) {
+                e.d1    = syarat_diskon
+                e.diskon= hdiskon,
                 e.harga	= $scope.edit_harga
                 e.total	= total
             }
@@ -2502,12 +2543,12 @@ app.controller("myCtrl", function($scope,$http,API) {
             'data' : data
         }
         let response = await window.api.insertTmp(data);
-        console.log('insert-tmp',response);
+        // console.log('insert-tmp',response);
     }
 
     $scope.deletetemp = async function(){
         let response = await window.api.deleteAllTmp();
-        console.log('insert-tmp',response);
+        // console.log('insert-tmp',response);
     }
 
     $scope.edittemp = async function(data){

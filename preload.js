@@ -57,7 +57,13 @@ contextBridge.exposeInMainWorld('api', {
     updateTransaksi:(param) => ipcRenderer.invoke('update-transaksi',param),
     // update barang
     notifBarang:(param) => ipcRenderer.invoke('notif-barang',param),
-    prosesUpdateBarang: (param) => ipcRenderer.invoke('proses-update-barang',param)
+    prosesUpdateBarang: (param) => ipcRenderer.invoke('proses-update-barang',param),
+    // promo 
+    promo:() => ipcRenderer.invoke('promo'),
+    promoDiskonBarang:(param) => ipcRenderer.invoke('promo-diskon-barang',param),
+    getTransaksi:() => ipcRenderer.invoke('get-transaksi'),
+    getTransaksiLokal:() => ipcRenderer.invoke('get-transksi-lokal'),
+    kirimUlangTransaksi:(param) => ipcRenderer.invoke('kirim-ulang-transaksi',param),
 });
 
 window.addEventListener('DOMContentLoaded', () => {

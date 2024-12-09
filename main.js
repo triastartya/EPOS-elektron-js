@@ -7,6 +7,97 @@ const os = require('os');
 
 let mainWindow;
 const db = new Database('epos.db');
+db.prepare(`
+  DROP TABLE IF EXISTS promo_diskon;
+`).run();
+db.prepare(`
+  DROP TABLE IF EXISTS promo_hadiah;
+`).run();
+db.prepare(`
+  DROP TABLE IF EXISTS promo_bonus;
+`).run();
+//===== promo diskon ===
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS promo_diskon (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_promo_diskon INTEGER,
+    is_nominal INTEGER,
+    kode_promo_diskon TEXT,
+    nama_promo_diskon TEXT,
+    minimal_qty TEXT,
+    diskon TEXT,
+    kuota INTEGER,
+    tanggal_mulai TEXT,
+    tanggal_berakhi TEXT,
+    gambar TEXT NULL,
+    is_active INTEGER,
+    is_tampil_pos INTEGER
+  );
+`).run();
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS promo_diskon_barang (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_promo_diskon INTEGER,
+    id_barang INTEGER
+  );
+`).run();
+//===== promo hadian ====
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS promo_hadiah (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_promo_hadiah INTEGER,
+    kode_promo_hadiah TEXT,
+    nama_promo_hadiah TEXT,
+    nilai_promo_hadiah TEXT,
+    is_kelipatan INTEGER,
+    keterangan TEXT,
+    jumlah INTEGER,
+    hadiah TEXT,
+    tanggal_mulai TEXT,
+    tanggal_berakhir TEXT,
+    gambar TEXT NULL,
+    is_active INTEGER,
+    is_tampil_pos INTEGER
+  );
+`).run();
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS promo_hadiah_barang (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_promo_hadiah INTEGER,
+    id_barang INTEGER
+  );
+`).run();
+//==== promo bonus ====
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS promo_bonus (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_promo_bonus INTEGER,
+    kode_promo_bonus TEXT,
+    nama_promo_bonus TEXT,
+    is_kelipatan INTEGER,
+    keterangan TEXT,
+    tanggal_mulai TEXT,
+    tanggal_berakhir TEXT,
+    gambar TEXT,
+    is_active INTEGER,
+    created_by INTEGER,
+    updated_by INTEGER,
+    created_at TEXT,
+    updated_at TEXT,
+    id_barang INTEGER,
+    kuota INTEGER,
+    is_tampil_pos INTEGER
+  )
+`).run();
+db.prepare(`
+  CREATE TABLE IF NOT EXISTS promo_bonus_barang (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    id_promo_bonus INTEGER,
+    id_barang INTEGER
+  );
+`).run();
+
+
 //===== create table version
 db.prepare(
   `CREATE TABLE IF NOT EXISTS version (
@@ -732,7 +823,6 @@ app.whenReady().then(() => {
           'Authorization': `Bearer ${login.data.data.token}`
         }
       });
-      console.log('edc', edc.data);
       const bank = await axios.get(kasir[0].ip_server + '/api/bank', {
         headers: {
           'Content-Type': 'application/json',
@@ -751,14 +841,12 @@ app.whenReady().then(() => {
           'Authorization': `Bearer ${login.data.data.token}`
         }
       });
-      console.log('edc', edc.data);
       const payment_method = await axios.get(kasir[0].ip_server + '/api/paymentMethod', {
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${login.data.data.token}`
         }
       });
-
       const version_barang = await axios.get(kasir[0].ip_server + '/api/version_barang', {
         headers: {
           'Content-Type': 'application/json',
@@ -766,7 +854,25 @@ app.whenReady().then(() => {
         }
       });
 
-      const insertMany = db.transaction((barang, edc, bank, minimal, customer, payment_method,version_barang) => {
+      const promo_diskon = await axios.get(kasir[0].ip_server + '/api/pos_promo_diskon', {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${login.data.data.token}`
+        }
+      });
+      const promo_hadiah = await axios.get(kasir[0].ip_server + '/api/pos_promo_hadiah', {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${login.data.data.token}`
+        }
+      });
+      const promo_bonus = await axios.get(kasir[0].ip_server + '/api/pos_promo_bonus', {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${login.data.data.token}`
+        }
+      });
+      const insertMany = db.transaction((barang, edc, bank, minimal, customer, payment_method,version_barang,promo_diskon,promo_hadiah,promo_bonus) => {
         db.exec(`DELETE FROM barang`);
         db.exec(`DELETE FROM sqlite_sequence WHERE name='barang'`);
         db.exec(`DELETE FROM bank`);
@@ -780,6 +886,18 @@ app.whenReady().then(() => {
         db.exec(`DELETE FROM payment_method`);
         db.exec(`DELETE FROM sqlite_sequence WHERE name='payment_method'`);
         db.exec(`DELETE FROM version`);
+        db.exec(`DELETE FROM promo_diskon`);
+        db.exec(`DELETE FROM sqlite_sequence WHERE name='promo_diskon'`);
+        db.exec(`DELETE FROM promo_diskon_barang`);
+        db.exec(`DELETE FROM sqlite_sequence WHERE name='promo_diskon_barang'`);
+        db.exec(`DELETE FROM promo_hadiah`);
+        db.exec(`DELETE FROM sqlite_sequence WHERE name='promo_hadiah'`);
+        db.exec(`DELETE FROM promo_hadiah_barang`);
+        db.exec(`DELETE FROM sqlite_sequence WHERE name='promo_hadiah_barang'`);
+        db.exec(`DELETE FROM promo_bonus`);
+        db.exec(`DELETE FROM sqlite_sequence WHERE name='promo_bonus'`);
+        db.exec(`DELETE FROM promo_bonus_barang`);
+        db.exec(`DELETE FROM sqlite_sequence WHERE name='promo_bonus_barang'`);
 
         const in_barang = db.prepare(`INSERT INTO barang 
         (
@@ -799,6 +917,13 @@ app.whenReady().then(() => {
         `);
         const in_payment_method = db.prepare(`INSERT INTO payment_method (id_payment_method,nama_payment_method,keterangan) VALUES (?,?,?)`);
         const in_version = db.prepare(`INSERT INTO version (version) VALUES (?)`);
+        const in_promo_diskon = db.prepare(`INSERT INTO promo_diskon(id_promo_diskon,is_nominal,kode_promo_diskon,nama_promo_diskon,minimal_qty,diskon,kuota,gambar,is_tampil_pos)VALUES (?,?,?,?,?,?,?,?,?)`);
+        const in_promo_diskon_barang = db.prepare(`INSERT INTO promo_diskon_barang (id_promo_diskon,id_barang) VALUES (?,?)`);
+        const in_promo_hadiah = db.prepare(`INSERT INTO promo_hadiah (id_promo_hadiah,kode_promo_hadiah,nama_promo_hadiah,nilai_promo_hadiah,is_kelipatan,keterangan,jumlah,hadiah,gambar,is_tampil_pos) VALUES (?,?,?,?,?,?,?,?,?,?)`);
+        const in_promo_hadiah_barang = db.prepare(`INSERT INTO promo_hadiah_barang (id_promo_hadiah,id_barang) VALUES (?,?)`);
+        const in_promo_bonus = db.prepare(`INSERT INTO promo_bonus (id_promo_bonus,kode_promo_bonus,nama_promo_bonus,is_kelipatan,keterangan,gambar,is_tampil_pos) VALUES (?,?,?,?,?,?,?)`);
+        const in_promo_bonus_barang = db.prepare(`INSERT INTO promo_bonus_barang (id_promo_bonus,id_barang) VALUES (?,?)`);
+
         for (const user of barang) {
           in_barang.run(
             user.id_barang, user.kode_barang, user.barcode, user.nama_barang, user.kode_satuan,
@@ -824,8 +949,27 @@ app.whenReady().then(() => {
           in_payment_method.run(pay.id_payment_method,pay.nama_payment_method,pay.keterangan);
         }
         in_version.run(version_barang.version);
+        console.log(promo_diskon);
+        for (const diskon of promo_diskon){
+          in_promo_diskon.run(diskon.id_promo_diskon,(diskon.is_nominal) ? 1 : 0,diskon.kode_promo_diskon,diskon.nama_promo_diskon,diskon.minimal_qty,diskon.diskon,diskon.kuota,diskon.gambar,(diskon.is_tampil_pos) ? 1 : 0);
+          for (const diskon_barang of diskon.barang){
+            in_promo_diskon_barang.run(diskon.id_promo_diskon,diskon_barang.id_barang);
+          }
+        }
+        for (const hadiah of promo_hadiah){
+          in_promo_hadiah.run(hadiah.id_promo_hadiah,hadiah.kode_promo_hadiah,hadiah.nama_promo_hadiah,hadiah.nilai_promo_hadiah,(hadiah.is_kelipatan) ? 1 : 0,hadiah.keterangan,hadiah.jumlah,hadiah.hadiah,hadiah.gambar,(hadiah.is_tampil_pos) ? 1 : 0);
+          for (const hadiah_barang of hadiah.barang){
+            in_promo_hadiah_barang.run(hadiah.id_promo_hadiah,hadiah_barang.id_barang);
+          }
+        }
+        for (const bonus of promo_bonus){
+          in_promo_bonus.run(bonus.id_promo_bonus,bonus.kode_promo_bonus,bonus.nama_promo_bonus,(bonus.is_kelipatan) ? 1 : 0,bonus.keterangan,bonus.gambar,(bonus.is_tampil_pos) ? 1 : 0);
+          for (const bonus_barang of bonus.barang){
+            in_promo_bonus_barang.run(bonus.id_promo_bonus,bonus_barang.id_barang);
+          }
+        }
       });
-      console.log(version_barang);
+
       insertMany(
         barang.data.data,
         edc.data.data.data,
@@ -833,7 +977,10 @@ app.whenReady().then(() => {
         minimal.data.data,
         customer.data.data.data,
         payment_method.data.data.data,
-        version_barang.data.data
+        version_barang.data.data,
+        promo_diskon.data.data,
+        promo_hadiah.data.data,
+        promo_bonus.data.data,
       );
       return { success: true, message: 'reload data successful' };
     } catch (error) {
@@ -919,7 +1066,11 @@ app.whenReady().then(() => {
 
   ipcMain.handle('get-barang-by-barcode', async (event, param) => {
     try {
-      barang = db.prepare(`select * from barang where TRIM(barcode)=TRIM('${param}')`);
+      barang = db.prepare(`select b.*,pd.minimal_qty,pd.diskon as diskonPromo,pd.is_nominal as isDiskonNominal from barang b 
+                          left join promo_diskon_barang pdb on b.idBarang=pdb.id_barang 
+                          left join promo_diskon pd on pdb.id_promo_diskon=pd.id_promo_diskon 
+                          where TRIM(barcode)=TRIM('${param}')`);
+
       const data = barang.get();
       console.log(data)
       return { success: true, data: data };
@@ -932,7 +1083,10 @@ app.whenReady().then(() => {
   ipcMain.handle('get-barang-by-kode', async (event, param) => {
     try {
       console.log('by kode param',param);
-      barang = db.prepare(`select * from barang where kodeBarang ='${param.id}'`);
+      barang = db.prepare(`select b.*,pd.minimal_qty,pd.diskon as diskonPromo,pd.is_nominal as isDiskonNominal from barang b 
+                          left join promo_diskon_barang pdb on b.idBarang=pdb.id_barang 
+                          left join promo_diskon pd on pdb.id_promo_diskon=pd.id_promo_diskon 
+                          where kodeBarang ='${param.id}'`);
       const data = barang.get();
       console.log(data)
       return { success: true, data: data };
@@ -974,6 +1128,7 @@ app.whenReady().then(() => {
       silent: true,
       deviceName: kasir[0].printer,
       copies: 1,
+      marginsType: 0
     }, (success, error) => {
       if (success) {
         console.log('oke');
@@ -987,7 +1142,11 @@ app.whenReady().then(() => {
 
   //============= KASIR
   ipcMain.handle('get-data-barang', async (event, param) => {
-    barang = db.prepare(`select * from barang where ${param.key} LIKE ? ORDER BY namaBarang DESC LIMIT 300`);
+    // barang = db.prepare(`select * from barang where ${param.key} LIKE ? ORDER BY namaBarang DESC LIMIT 300`);
+    barang = db.prepare(`select b.*,pd.minimal_qty,pd.diskon as diskonPromo,pd.is_nominal as isDiskonNominal from barang b 
+                          left join promo_diskon_barang pdb on b.idBarang=pdb.id_barang 
+                          left join promo_diskon pd on pdb.id_promo_diskon=pd.id_promo_diskon
+                          where ${param.key} LIKE ? ORDER BY b.namaBarang DESC LIMIT 300`)
     const data = barang.all(`%${param.cari}%`)
     return data;
   })
@@ -1279,7 +1438,7 @@ app.whenReady().then(() => {
       data.TransPenjualanDetPayment = JSON.parse(data.TransPenjualanDetPayment);
       data.promoHadiah = JSON.parse(data.promoHadiah);
       let customer = db.prepare(`SELECT * FROM customer WHERE idCustomer = ${data.IdCustomer}`).get();
-      let login = db.prepare(`SELECT * FROM login`).get();
+      let login = db.prepare(`SELECT * FROM username WHERE id_user=${data.UserEntry}`).get();
       let toko = db.prepare(`SELECT * FROM toko`).get();
       let kasir = db.prepare(`SELECT * FROM kasir`).get();
       return {
@@ -1345,6 +1504,64 @@ app.whenReady().then(() => {
   });
 
   //====== tutupkasir
+  ipcMain.handle('get-transaksi',async()=>{
+    try {
+      user = db.prepare(`SELECT * FROM login`).get();
+      if(!user){
+        return { success: false, message: 'terjadi kesalahan saat login silahkan login ulang' };
+      }
+
+      const kasir = db.prepare(`SELECT * FROM kasir`).get();
+      if(!kasir){
+        return {success:false,message:'terjadi kesalahan, Belum Setting Kasir '};
+      }
+      
+      const login = await axios.post(kasir.ip_server + '/api/login', {
+        'email': user.email,
+        'password': user.password
+      });
+      
+      transaksi = await axios.post(kasir.ip_server + `/api/kasir/get_transaksi`,{
+        'id_kasir':kasir.id_kasir,
+        'tanggal_penjualan':tanggal_now()
+      }, {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${login.data.data.token}`
+        }
+      });
+      console.log('response',transaksi);
+
+      if(transaksi.data.success){
+        return {success:true,message:'oke',data:transaksi.data.data}
+      }else{
+        return {success:false,message:transaksi.data.message}
+      }
+    } catch (error) {
+        return {success:false,message:error.message}
+    }
+  })
+
+  ipcMain.handle('get-transksi-lokal', async() => {
+    try {
+      history = db.prepare(`select * from transaksi where date(waktu) =?`);
+      data = history.all(tanggal_now());
+      return { success: true, data: data, message: 'oke' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  })
+
+  ipcMain.handle('kirim-ulang-transaksi', (event, param) => {
+    try {
+      tmp = db.prepare(`update transaksi set kirim=0 where FakturPenjualan = ?`);
+      const data = tmp.run(param);
+      return { success: true, message: 'oke' };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  })
+
   ipcMain.handle('kasir-belum-tutup-kasir',async()=>{
     try {
       const kasir = db.prepare(`SELECT * FROM kasir`).get();
@@ -1543,9 +1760,9 @@ app.whenReady().then(() => {
       });
       console.log('response',kirim);
       if(kirim.data.success){
-        let login = db.prepare(`SELECT * FROM login`).get();
-        let toko = db.prepare(`SELECT * FROM toko`).get();
-        let kasir = db.prepare(`SELECT * FROM kasir`).get();
+        let login = db.prepare(`SELECT * FROM login`).all();
+        let toko = db.prepare(`SELECT * FROM toko`).all();
+        let kasir = db.prepare(`SELECT * FROM kasir`).all();
         return {success:true,message:'oke',data: {
           transaksi: kirim.data.data,
           login: login,
@@ -1590,6 +1807,34 @@ app.whenReady().then(() => {
       return { success: false, message: error.message };
     }
   })
+
+  ipcMain.handle('promo', (event, param) => {
+    try {
+      let diskon = db.prepare(`SELECT * FROM promo_diskon`).all();
+      let hadiah = db.prepare(`SELECT * FROM promo_hadiah`).all();
+      let bonus = db.prepare(`SELECT * FROM promo_bonus`).all();
+      return { success: true, message: 'oke',data:{
+        diskon :diskon,
+        hadiah :hadiah,
+        bonus :bonus,
+      } };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  })
+
+  ipcMain.handle('promo-diskon-barang', (event, param) => {
+    try {
+      let diskon = db.prepare(`select pd.* from promo_diskon_barang pdb inner join promo_diskon pd on pdb.id_promo_diskon=pd.id_promo_diskon
+      where id_barang = ${param} order by id_promo_diskon desc limit 1`).get();
+      return { success: true, message: 'oke',data:diskon };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  })
+
+  
+  
 })
 
 ipcMain.on('login-page-menu', () => {

@@ -36,7 +36,9 @@
                     console.log('print',$scope.print);
                     $scope.nama_member = '';
                     $scope.poin_member = 0;
+                    $scope.nota_copy = '';
                     if($scope.print==0){
+                        $scope.nota_copy = '';
                         let response = await window.api.printUlang();
                         console.log(response);
                         $scope.data = response.data;
@@ -44,7 +46,9 @@
                             $scope.nama_member = response.data.customer.namaCustomer;
                             $scope.poin_member = response.data.customer.jumlahPoint;
                         }
+
                     }else{
+                        $scope.nota_copy = '----NOTA COPY----';
                         let response = await window.api.printUlangParam($scope.id);
                         console.log(response);
                         $scope.data = response.data;
@@ -71,19 +75,28 @@
             p {
                 line-height: 0.1;
             }
+            hr{
+                margin-block-start: 1px;
+                margin-block-end: 1px;
+            }
+            table {
+                border-collapse: separate;
+                border-spacing: 0 1px; /* Horizontal = 0, Vertical = 10px */
+            }
             @media print {
                 body {
-                    width: 54mm; /* Or 80mm, depending on the paper size */
+                    margin: 0;
+                    padding: 0;
+                    width: 58mm; /* Or 80mm, depending on the paper size */
                 }
             }
         </style>
     </head>
     <body ng-app="app"  ng-controller="myCtrl">
-        <button type="button" ng-click="cetak()" id="cetak" style="display: none;">print</button>
         <div style="font-family: 'Inter', sans-serif;">
             <div style="text-align: center;"> 
-                <a style="font-size: <% text.header + scale %>px;font-weight: bold;"><% data.toko.nama_lokasi %></a><br/>
-                <a style="font-size: <% text.title + scale %>px;font-weight: bold;"><% data.toko.alamat %></a>
+                <div><a style="font-size: <% text.header + scale %>px;"><% data.toko.nama_lokasi %></a></div>
+                <div><a style="font-size: <% text.title + scale %>px;"><% data.toko.alamat %></a></div>
                 <hr/>
                 <table style="border:0px">
                     <tr style="border:0px">
@@ -102,9 +115,9 @@
                         <td style="border:0px;font-size: <% text.text + scale %>px"><% data.toko.npwp %></td>
                     </tr>
                 </table>
-                <hr/>
+                <hr style=""/>
             </div>
-            <div ng-repeat="detail in data.transaksi.TransPenjualanDet" style="border:0px;font-size: <% text.text + scale %>px;margin-bottom: 5px;">
+            <div ng-repeat="detail in data.transaksi.TransPenjualanDet | orderBy:'kodeBarang'" style="border:0px;font-size: <% text.text + scale %>px;margin-bottom: 1px;">
                 <div class="nama_barang"><% detail.namaBarang.substring(0,26) %></div>
                 <!-- <table style="border: 0px;width: 100%;font-size: <% text.text + scale %>px;">
                     <tr>
@@ -116,7 +129,7 @@
                         </td>
                     </tr>
                 </table> -->
-                <div>
+                <div style="width: 100%;">
                     <div style="display: inline-block;text-align: left;width: 68%;">
                         <% detail.kodeBarang.substring(0,26) %> <% detail.QtyJual %>x <% detail.HargaJual | currency:"" %>
                     </div>
@@ -128,10 +141,10 @@
             <hr/>
             <div style="font-family: 'Inter', sans-serif;font-size: <% text.text + scale %>px;">
                 <div>
-                    <div style="display: inline-block;text-align: left;width: 68%;font-weight: bold;">
+                    <div style="display: inline-block;text-align: left;width: 68%;">
                         Total Transaksi
                     </div>
-                    <div style="display: inline-block;text-align: right;width: 30%;font-weight: bold;">
+                    <div style="display: inline-block;text-align: right;width: 30%;">
                         <% data.transaksi.TotalTransaksi2 | currency:"" %>
                     </div>
                 </div>
@@ -144,25 +157,27 @@
                     </div>
                 </div>
                 <div style="margin-bottom: 10px;">
-                    <div style="display: inline-block;text-align: left;width: 68%;font-weight: bold;">
+                    <div style="display: inline-block;text-align: left;width: 68%;">
                         Kembalian
                     </div>
-                    <div style="display: inline-block;text-align: right;width: 30%;font-weight: bold;">
+                    <div style="display: inline-block;text-align: right;width: 30%;">
                         <% data.transaksi.Kembali | currency:"" %>
                     </div>
                 </div>
             </div>
             <div style="font-family: 'Inter', sans-serif;font-size: <% text.footer + scale %>px;text-align: center;">
+                <center><% nota_copy %></center>
                 <p>*** PPN 11% SUDAH DI BAYAR MORODADI ***</p>
-                <p>DARI BLORA OLEH BLORA UNTUK BLORA</p><br/>
+                <p style="margin-block-end: 1.5em;">DARI BLORA OLEH BLORA UNTUK BLORA</p>
                 <p><% data.transaksi.waktu %>/<% data.login.nama%></p>
                 <p><% data.transaksi.FakturPenjualan %></p>
                 <p>BARANG-BARANG YANG SUDAH DI BELI</p>
                 <p>TIDAK BOLEH DI TUKAR / DI KEMBALIKAN</p>
-                <p style="font-weight: bold;">** TERIMA KASIH **</p><br/>
+                <p>** TERIMA KASIH **</p><br/>
                 <p ng-show="nama_member!=''">Nama Customer : <% nama_member %></p>
                 <p ng-show="nama_member!=''">Jumlah Poin : <% poin_member %></p>
             </div>
         </div>
+        <button type="button" ng-click="cetak()" id="cetak" style="display: none;">print</button>
     </body>
 </html>

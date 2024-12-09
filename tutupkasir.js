@@ -23,6 +23,9 @@ app.controller("myCtrl", function($scope,$http,API) {
     $scope.keterangan = '';
     $scope.penerimaan = 0;
     $scope.setor_bank = 0;
+    $scope.transaksi_server = [];
+    $scope.transaksi_lokal = [];
+    $scope.hilang = [];
     var table
     table   =  $('#listdatatable').DataTable({
         "ordering"        : false,
@@ -63,8 +66,31 @@ app.controller("myCtrl", function($scope,$http,API) {
             item.nominal = 0;
         });
         console.log($scope.payment_method);
-        $scope.$apply();
         Swal.close();
+        //====== tarik transaksi dari server
+        response = await window.api.getTransaksi();
+        console.log('transaksi_server => ',response);
+        if(!response.success){
+            Swal.fire({type: 'error',title: 'Gagal get data transaksi server',text: response.message})
+        }else{
+            $scope.transaksi_server = response.data
+        }
+        //====== tarik transaksi dari lokal kasir
+        response_lokal = await window.api.getTransaksiLokal();
+        console.log('transaksi_lokal => ',response_lokal);
+        if(!response_lokal.success){
+            Swal.fire({type: 'error',title: 'Gagal get data transaksi server',text: response_lokal.message})
+        }else{
+            $scope.transaksi_lokal = response_lokal.data
+        }
+        //=============
+        //======== compare data 
+        // Membandingkan faktur
+        $scope.hilang = $scope.transaksi_lokal.filter(item => 
+            !$scope.transaksi_server.some(data => data.no_faktur === item.FakturPenjualan)
+        );
+        console.log('hilang',$scope.hilang);
+        $scope.$apply();
     });
 
     $scope.nextfocus_right = function(id){
@@ -107,5 +133,20 @@ app.controller("myCtrl", function($scope,$http,API) {
                 }
             }
         });
+    }
+
+    $scope.kirim_ulang = async function(x){
+        //console.log(x)
+        Swal.fire({title: 'Loading..',onOpen: () => {
+            Swal.showLoading()
+        }});
+        res_kirim_ulang = await window.api.kirimUlangTransaksi(x.FakturPenjualan)
+        console.log('response',res_kirim_ulang);
+        if(response.success){
+            data = await window.api.kirimTransaksiServer();
+            location.reload();
+        }else{
+            Swal.fire({type: 'error',title: '',text: response.message,})
+        }
     }
 })

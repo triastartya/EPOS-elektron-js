@@ -42,6 +42,35 @@
 					<!-- <div class="text-right"> -->
 						<p style="text-align: end;font-weight: bold;">Total Modal Kasir, <% total_modal | currency:"" %></p>
 					<!-- </div> -->
+					<p class="h5 text-danger" ng-show="hilang.length!=0">Cek Transaksi Server</p>
+					<div style="width:100%;overflow-x: auto;"ng-show="hilang.length!=0">
+						<table class="table table-bordered border-danger">
+							<thead style="font-weight: bold;">
+								<tr>
+									<td></td>
+									<td>#</td>
+									<td>NO NOTA</td>
+									<td>NOMINAL</td>
+									<td>USER</td>
+									<td>KIRIM</td>
+									<td>CODE</td>
+									<td>RESPONSE</td>
+								</tr>
+							</thead>
+							<tbody>
+								<tr ng-repeat="x in hilang">
+									<td><button ng-click="kirim_ulang(x)" type="button" class="btn btn-primary btn-sm">Kirim</button></td>
+									<td><% $index+1 %></td>
+									<td><% x.FakturPenjualan %></td>
+									<td><% x.TotalTransaksi2 %></td>
+									<td><% x.UserEntry %></td>
+									<td><% x.kirim %></td>
+									<td><% x.kirim_code %></td>
+									<td><% x.kirim_response %></td>
+								</tr>
+							</tbody>
+						</table>
+					</div>
 				</div>
 				<div class="col-sm-6">
 					<p class="h5">Nominal Tutup Kasir</p>
