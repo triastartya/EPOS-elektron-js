@@ -102,6 +102,24 @@ app.controller("myCtrl", function($scope,$http,API) {
         $scope.penerimaan = $scope.payment_method.sum("nominal")
         $scope.sisa_saldo =  $scope.penerimaan + $scope.total_modal + $scope.setor_bank
     }
+
+    $scope.te = function(){
+        let data = {
+            "kasir":$scope.input_tutup_kasir.data.login,
+            "toko":$scope.input_tutup_kasir.data.toko,
+            "id_user_kasir":$scope.input_tutup_kasir.data.login.id_user,
+            "tanggal_tutup_kasir":"",
+            "modal_kasir":$scope.total_modal,
+            "pengeluaran":0,
+            "penerimaan":$scope.penerimaan,
+            "sisa_saldo":$scope.sisa_saldo,
+            "keterangan":$scope.keterangan,
+            "setor_bank":$scope.setor_bank,
+            "detail": $scope.payment_method
+        }
+        var jsonString = encodeURIComponent(JSON.stringify(data));
+        window.location.href = `./tutupkasircetak.html?data=${jsonString}`;
+    }
     
     $scope.simpan = function(){
         Swal.fire({
@@ -126,7 +144,10 @@ app.controller("myCtrl", function($scope,$http,API) {
                 console.log('response',response);
                 if(response.success){
                     Swal.fire('Berhasil Input Tutup Kasir!','','success').then(function(){
-                        location.reload();
+                        data.kasir = $scope.input_tutup_kasir.data.login;
+                        data.toko = $scope.input_tutup_kasir.data.toko;
+                        var jsonString = encodeURIComponent(JSON.stringify(data));
+                        window.location.href = `./tutupkasircetak.html?data=${jsonString}`;
                     });
                 }else{
                     Swal.fire({type: 'error',title: '',text: response.message,})

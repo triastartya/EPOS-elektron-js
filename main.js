@@ -4,8 +4,11 @@ const path = require('path');
 const axios = require('axios');
 const getmac = require('getmac').default;
 const os = require('os');
+const { ThermalPrinter, PrinterTypes, CharacterSet, BreakLine } = require('node-thermal-printer');
 
 let mainWindow;
+
+
 const db = new Database('epos.db');
 db.prepare(`
   DROP TABLE IF EXISTS promo_diskon;
@@ -787,6 +790,8 @@ app.whenReady().then(() => {
       }
       db.exec(`DELETE FROM login`);
       db.exec(`DELETE FROM sqlite_sequence WHERE name='login'`);
+      db.exec(`DELETE FROM toko`);
+      db.exec(`DELETE FROM sqlite_sequence WHERE name='toko'`);
       const insert = db.prepare(`INSERT INTO login(id_user,email,nama,password) VALUES (?,?,?,?)`);
       insert.run(data[0].id_user, data[0].email, data[0].nama, data[0].password_kasir);
       const toko = db.prepare(`
@@ -1114,6 +1119,7 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('tesprint', async (event, param) => {
+
     const platform = os.platform();
     if (platform == 'win32') {
       const printers = await mainWindow.webContents.getPrintersAsync();
@@ -1124,6 +1130,17 @@ app.whenReady().then(() => {
     if (kasir.length == 0) {
       return { success: false, message: 'kasir belum di setting' };
     }
+
+    let printer = new ThermalPrinter({
+      type: PrinterTypes.EPSON,  // Printer type: 'star' or 'epson'
+      interface: 'usb://EPSON/TM-U220',
+      characterSet: CharacterSet.SIMPLE,
+      removeSpecialCharacters: false,
+    });
+
+    let isConnected = await printer.isPrinterConnected();
+    console.log('status printer',isConnected);
+
     mainWindow.webContents.print({
       silent: true,
       deviceName: kasir[0].printer,
@@ -1132,6 +1149,7 @@ app.whenReady().then(() => {
     }, (success, error) => {
       if (success) {
         console.log('oke');
+        printer.openCashDrawer();
         return { success: true, message: 'ok' }
       } else {
         console.log(error.message);
@@ -1469,11 +1487,11 @@ app.whenReady().then(() => {
       if(!kasir){
         return {success:false,message:'kesalahan login silahakan login ulang'};
       }
-      const login = await axios.post(kasir.ip_server + '/api/login', {
-        'email': 'admin@gmail.com',
-        'password': '123'
-      });
       for (const trans of transaksi) {
+        const login = await axios.post(kasir.ip_server + '/api/login', {
+          'email': 'admin@gmail.com',
+          'password': '123'
+        });
         let request = mappingToSend(trans);
         // console.log('request => ',request);
         kirim = await axios.post(kasir.ip_server + '/api/penjualan/insert',request, {
@@ -1590,6 +1608,10 @@ app.whenReady().then(() => {
 
   ipcMain.handle('get-modal-kasir',async()=>{
     try {
+      toko = db.prepare(`SELECT * FROM toko`).get();
+      if(!toko){
+        return { success: false, message: 'informasi toko tidak tersedia' };
+      }
       user = db.prepare(`SELECT * FROM login`).get();
       if(!user){
         return { success: false, message: 'terjadi kesalahan saat login silahkan login ulang' };
@@ -1611,7 +1633,8 @@ app.whenReady().then(() => {
       if(kirim.data.success){
         return {success:true,message:'oke',data:{
           modal_kasir : kirim.data.data,
-          login : user
+          login : user,
+          toko : toko
         }}
       }else{
         return {success:false,message:kirim.data.message}
@@ -1833,8 +1856,6 @@ app.whenReady().then(() => {
     }
   })
 
-  
-  
 })
 
 ipcMain.on('login-page-menu', () => {

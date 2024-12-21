@@ -1,0 +1,138 @@
+<html>
+    <head>
+        <script src="./assets/jquery.min.js"></script>
+        <script src="./assets/angular/angular.min.js"></script>
+        <script src="./assets/app.angular.js"></script>
+        <script>
+            $( document ).ready( async()=>{
+                $('#cetak').click();
+            });
+            app.controller("myCtrl", function($scope,$http,API) {
+                angular.element(window).ready(async function () {
+                    const tanggal = new Date();
+                    const tahun = tanggal.getFullYear();
+                    const bulan = tanggal.toLocaleString('id-ID', { month: 'long' });
+                    const hari = tanggal.getDate();
+
+                    const jam = tanggal.getHours();
+                    const menit = tanggal.getMinutes();
+                    const detik = tanggal.getSeconds();
+
+                    $scope.tanggal = `${hari} ${bulan} ${tahun}, ${jam}:${menit}:${detik}`;
+                    $scope.data = null;
+                    $scope.id =null;
+                    $scope.print=null;
+                    $scope.scale=3;
+                    $scope.text = {
+                        header : 14,
+                        title : 10,
+                        text :9,
+                        footer : 9
+                    };
+                    function getParameterByName(name, url = window.location.href) {
+                        name = name.replace(/[\[\]]/g, '\\$&');
+                        let regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
+                        let results = regex.exec(url);
+                        if (!results) return null;
+                        if (!results[2]) return '';
+                        return decodeURIComponent(results[2].replace(/\+/g, ' '));
+                    }
+                    $scope.data = JSON.parse(decodeURIComponent(getParameterByName('data')));
+                    console.log($scope.data);
+                    $scope.$apply();
+                    window.addEventListener("afterprint",()=>{
+                        window.history.back();
+                    });
+                })
+                $scope.cetak = function(){
+                    await = window.api.tesPrint({
+                        id:1243
+                    });
+                }
+                // $scope.print();
+            });
+        </script>
+        <link href="./assets/fonts/inter/inter.css">
+        <style>
+            p {
+                line-height: 0.1;
+            }
+            hr{
+                margin-block-start: 1px;
+                margin-block-end: 1px;
+            }
+            table {
+                border-collapse: separate;
+                border-spacing: 0 1px; /* Horizontal = 0, Vertical = 10px */
+            }
+            @media print {
+                body {
+                    margin: 0;
+                    padding: 0;
+                    width: 58mm; /* Or 80mm, depending on the paper size */
+                }
+            }
+        </style>
+    </head>
+    <body ng-app="app"  ng-controller="myCtrl">
+        <div style="font-family: 'Inter', sans-serif;">
+            <div style="text-align: center;"> 
+                <div><a style="font-size: <% text.header + scale %>px;"><% data.toko.nama_lokasi %></a></div>
+                <div><a style="font-size: <% text.title + scale %>px;"><% data.toko.alamat %></a></div>
+                <hr/>
+                <table style="border:0px">
+                    <tr style="border:0px">
+                        <td style="border:0px;font-size: <% text.text + scale %>px">Tanggal</td>
+                        <td style="border:0px;font-size: <% text.text + scale %>px">:</td>
+                        <td style="border:0px;font-size: <% text.text + scale %>px"><% tanggal %></td>
+                    </tr>
+                    <tr style="border:0px">
+                        <td style="border:0px;font-size: <% text.text + scale %>px">Operator</td>
+                        <td style="border:0px;font-size: <% text.text + scale %>px">:</td>
+                        <td style="border:0px;font-size: <% text.text + scale %>px"><% data.kasir.nama %></td>
+                    </tr>
+                    <tr style="border:0px">
+                        <td style="border:0px;font-size: <% text.text + scale %>px">Modal Awal</td>
+                        <td style="border:0px;font-size: <% text.text + scale %>px">:</td>
+                        <td style="border:0px;font-size: <% text.text + scale %>px"><% data.modal_kasir | currency:"" %></td>
+                    </tr>
+                </table>
+                <hr style=""/>
+            </div>
+            <div ng-repeat="detail in data.detail" style="border:0px;font-size: <% text.text + scale %>px;margin-bottom: 1px;">
+                <div style="width: 100%;">
+                    <div style="display: inline-block;text-align: left;width: 68%;">
+                        <% detail.payment_method.substring(0,26) %> 
+                    </div>
+                    <div style="display: inline-block;text-align: right;width: 30%">
+                        <% detail.nominal | currency:"" %>
+                    </div>
+                </div>
+            </div>
+            <hr/>
+            <div style="font-family: 'Inter', sans-serif;font-size: <% text.text + scale %>px;">
+                <div>
+                    <div style="display: inline-block;text-align: left;width: 68%;">
+                        Setor Bank
+                    </div>
+                    <div style="display: inline-block;text-align: right;width: 30%;">
+                        <% data.setor_bank | currency:"" %>
+                    </div>
+                </div>
+                <div>
+                    <div style="display: inline-block;text-align: left;width: 68%;">
+                        Total Saldo Kasir
+                    </div>
+                    <div style="display: inline-block;text-align: right;width: 30%;">
+                        <% data.penerimaan | currency:"" %>
+                    </div>
+                </div>
+            </div>
+            <div style="font-family: 'Inter', sans-serif;font-size: <% text.footer + scale %>px;text-align: left;">
+                <p>Keterangan :</p>
+                <p><% data.keterangan %></p>
+            </div>
+        </div>
+        <button type="button" ng-click="cetak()" id="cetak" style="display: none;">print</button>
+    </body>
+</html>

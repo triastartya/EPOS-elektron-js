@@ -358,7 +358,7 @@ app.controller("myCtrl", function($scope,$http,API) {
         if($scope.sts_notif_barang){
             $scope.version_barang();
         }
-    },10000);
+    },300000);
 
     $scope.transfer = true;
 
@@ -2243,7 +2243,7 @@ app.controller("myCtrl", function($scope,$http,API) {
         if(response.succsess){
             Swal.close();
             $scope.kosongsemua();
-            window.location.href = `./nota.html?id=${response.data}&print=0`;
+            window.location.href = `./nota.html?id=${response.data}&print=0&print_ulang=0`;
         }else{
             Swal.fire({icon: 'error',title: 'Opps....',text: response.message})
         }
@@ -2288,9 +2288,9 @@ app.controller("myCtrl", function($scope,$http,API) {
             //         Swal.fire({type: 'error',title: 'Oops...',text: res.data.message,})
             //     }
             // })
-            window.location.href = './nota.html?id='+$scope.nofakturprint+'&print=1'
+            window.location.href = './nota.html?id='+$scope.nofakturprint+'&print=1&print_ulang=1'
         }else{
-            window.location.href = './nota.html?id=0&print=0'
+            window.location.href = './nota.html?id=0&print=0&print_ulang=1'
             // Swal.fire({title: 'Loading Printer..',onOpen: () => {Swal.showLoading()}})
             // $http.get(API.base_url + '/api_data/offline/printulang').then(function(res){
             //     $('#printulang').modal('hide');

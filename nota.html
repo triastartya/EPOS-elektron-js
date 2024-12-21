@@ -12,6 +12,7 @@
                     $scope.data = null;
                     $scope.id =null;
                     $scope.print=null;
+                    $scope.print_ulang=null;
                     $scope.scale=3;
                     $scope.text = {
                         header : 14,
@@ -29,16 +30,18 @@
                     }
                     $scope.id = getParameterByName('id');
                     $scope.print = getParameterByName('print');
+                    $scope.print_ulang = getParameterByName('print_ulang');
                     // $scope.data = window.api.tesPrint({
                     //     id:id
                     // });
                     console.log('id',$scope.id);
                     console.log('print',$scope.print);
+                    console.log('print ulang',$scope.print_ulang);
                     $scope.nama_member = '';
                     $scope.poin_member = 0;
-                    $scope.nota_copy = '';
+                    $scope.nota_copy =($scope.print_ulang==1)?'----NOTA COPY----':'';
                     if($scope.print==0){
-                        $scope.nota_copy = '';
+                        // $scope.nota_copy = '';
                         let response = await window.api.printUlang();
                         console.log(response);
                         $scope.data = response.data;
@@ -48,7 +51,7 @@
                         }
 
                     }else{
-                        $scope.nota_copy = '----NOTA COPY----';
+                        // $scope.nota_copy = '----NOTA COPY----';
                         let response = await window.api.printUlangParam($scope.id);
                         console.log(response);
                         $scope.data = response.data;
