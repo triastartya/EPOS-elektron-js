@@ -61,6 +61,7 @@ contextBridge.exposeInMainWorld('api', {
     // promo 
     promo:() => ipcRenderer.invoke('promo'),
     promoDiskonBarang:(param) => ipcRenderer.invoke('promo-diskon-barang',param),
+    promoHadiahBarang:(param) => ipcRenderer.invoke('promo-hadiah-barang',param),
     getTransaksi:() => ipcRenderer.invoke('get-transaksi'),
     getTransaksiLokal:() => ipcRenderer.invoke('get-transksi-lokal'),
     kirimUlangTransaksi:(param) => ipcRenderer.invoke('kirim-ulang-transaksi',param),

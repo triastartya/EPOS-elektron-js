@@ -176,9 +176,11 @@
                 <p><% data.transaksi.FakturPenjualan %></p>
                 <p>BARANG-BARANG YANG SUDAH DI BELI</p>
                 <p>TIDAK BOLEH DI TUKAR / DI KEMBALIKAN</p>
-                <p>** TERIMA KASIH **</p><br/>
+                <p>** TERIMA KASIH **</p>
                 <p ng-show="nama_member!=''">Nama Customer : <% nama_member %></p>
                 <p ng-show="nama_member!=''">Jumlah Poin : <% poin_member %></p>
+                <p ng-show="data.transaksi.promoHadiah.length>=1">------- HADIAH-----------</p>
+                <center ng-repeat="hadiah in data.transaksi.promoHadiah">Dapat <% hadiah.jml %> <% hadiah.hadiah %> </center>
             </div>
         </div>
         <button type="button" ng-click="cetak()" id="cetak" style="display: none;">print</button>

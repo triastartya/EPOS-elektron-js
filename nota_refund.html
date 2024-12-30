@@ -68,8 +68,8 @@
         <button type="button" ng-click="cetak()" id="cetak" style="display: none;">print</button>
         <div style="font-family: 'Inter', sans-serif;">
             <div style="text-align: center;"> 
-                <a style="font-size: <% text.header + scale %>px;font-weight: bold;"><% data.toko.nama_lokasi %></a><br/>
-                <a style="font-size: <% text.title + scale %>px;font-weight: bold;"><% data.toko.alamat %></a>
+                <a style="font-size: <% text.header + scale %>px;"><% data.toko.nama_lokasi %></a><br/>
+                <a style="font-size: <% text.title + scale %>px;"><% data.toko.alamat %></a>
                 <hr/>
                 <table style="border:0px">
                     <tr style="border:0px">
@@ -90,7 +90,7 @@
                 </table>
                 <hr/>
             </div>
-            <a style="font-size: <% text.title + scale %>px;font-weight: bold;">Item Refund : </a>
+            <a style="font-size: <% text.title + scale %>px;">Item Refund : </a>
             <div ng-repeat="detail in data.transaksi.detail" style="border:0px;font-size: <% text.text + scale %>px;margin-bottom: 5px;">
                 <div class="nama_barang"><% detail.nama_barang.substring(0,26) %></div>
                 <!-- <table style="border: 0px;width: 100%;font-size: <% text.text + scale %>px;">
@@ -115,10 +115,10 @@
             <hr/>
             <div style="font-family: 'Inter', sans-serif;font-size: <% text.text + scale %>px;">
                 <div>
-                    <div style="display: inline-block;text-align: left;width: 68%;font-weight: bold;">
+                    <div style="display: inline-block;text-align: left;width: 68%;">
                         Total Refund
                     </div>
-                    <div style="display: inline-block;text-align: right;width: 30%;font-weight: bold;">
+                    <div style="display: inline-block;text-align: right;width: 30%;">
                         (<% data.transaksi.total_refund | currency:"" %>)
                     </div>
                 </div>
@@ -130,7 +130,7 @@
                 <p><% data.transaksi.no_retur_penjualan %></p>
                 <p>BARANG-BARANG YANG SUDAH DI BELI</p>
                 <p>TIDAK BOLEH DI TUKAR / DI KEMBALIKAN</p>
-                <p style="font-weight: bold;">** TERIMA KASIH **</p>
+                <p style="">** TERIMA KASIH **</p>
             </div>
         </div>
     </body>

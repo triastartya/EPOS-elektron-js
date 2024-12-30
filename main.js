@@ -1783,9 +1783,9 @@ app.whenReady().then(() => {
       });
       console.log('response',kirim);
       if(kirim.data.success){
-        let login = db.prepare(`SELECT * FROM login`).all();
-        let toko = db.prepare(`SELECT * FROM toko`).all();
-        let kasir = db.prepare(`SELECT * FROM kasir`).all();
+        let login = db.prepare(`SELECT * FROM login`).get();
+        let toko = db.prepare(`SELECT * FROM toko`).get();
+        let kasir = db.prepare(`SELECT * FROM kasir`).get();
         return {success:true,message:'oke',data: {
           transaksi: kirim.data.data,
           login: login,
@@ -1850,6 +1850,16 @@ app.whenReady().then(() => {
     try {
       let diskon = db.prepare(`select pd.* from promo_diskon_barang pdb inner join promo_diskon pd on pdb.id_promo_diskon=pd.id_promo_diskon
       where id_barang = ${param} order by id_promo_diskon desc limit 1`).get();
+      return { success: true, message: 'oke',data:diskon };
+    } catch (error) {
+      return { success: false, message: error.message };
+    }
+  })
+  
+  ipcMain.handle('promo-hadiah-barang', (event, param) => {
+    try {
+      let diskon = db.prepare(`select pd.* from promo_hadiah_barang pdb inner join promo_hadiah pd on pdb.id_promo_hadiah=pd.id_promo_hadiah
+      where pdb.id_barang = ${param} order by pd.id_promo_hadiah desc limit 1`).get();
       return { success: true, message: 'oke',data:diskon };
     } catch (error) {
       return { success: false, message: error.message };

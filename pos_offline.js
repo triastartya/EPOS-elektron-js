@@ -376,12 +376,12 @@ app.controller("myCtrl", function($scope,$http,API) {
         hadiah:[],
         bonus:[]
     }
-    $scope.getpromo = async function(){
+    $scope.getDatapromo = async function(){
         let response = await window.api.promo();
         $scope.settingpromo = response.data;
         console.log('promo =>',$scope.settingpromo);
     }
-    $scope.getpromo();
+    $scope.getDatapromo();
     
     window.setInterval( async()=>{
         if($scope.transfer){
@@ -820,6 +820,19 @@ app.controller("myCtrl", function($scope,$http,API) {
             }else{
                 console.log('error tarik data promoDiskonBarang '+res_promo_diskon.message);
             }
+            let res_hadiah_diskon = await window.api.promoHadiahBarang(item.idBarang);
+            console.log('res_promo_hadiah',res_hadiah_diskon);
+            if(res_hadiah_diskon.success){
+                if(res_hadiah_diskon.data){
+                    item.setPromoHadiahID       =res_hadiah_diskon.data.id_promo_hadiah;
+                    item.jumlahHadiah           =res_hadiah_diskon.data.jumlah;
+                    item.hadiah                 =res_hadiah_diskon.data.hadiah;
+                    item.minimalNominal         =parseInt(res_hadiah_diskon.data.nilai_promo_hadiah);
+                    item.isBerlakuKelipatan     =(res_hadiah_diskon.data.is_kelipatan==0)?false:true;
+                }
+            }else{
+                console.log('error tarik data promoHadiahBarang '+res_hadiah_diskon.message);
+            }
             //===============================
             syarat_diskon = (parseInt(qty) >= (item.minimal_qty)?item.minimal_qty:0)? item.diskonPromo : 0 ;
             console.log('atas',syarat_diskon);
@@ -1114,6 +1127,7 @@ app.controller("myCtrl", function($scope,$http,API) {
                 $scope.generadeDataPromo(d);
             }
         });
+        console.log(d);
     }
 
     $scope.generadeDataPromo = function(d){
@@ -1140,7 +1154,7 @@ app.controller("myCtrl", function($scope,$http,API) {
         }, {});
         // ubah Jumlah Hadiah jika berlaku kelipatan
         $.grep(prosesPromo, function (item,index) {
-            if(item.kelipatan){ 
+            if(item.kelipatan){
                 item.jml	= Math.floor(item.total/item.nilaiPembelian) * item.jumlahHadiah;
             }
         });
